@@ -10,11 +10,30 @@ npm install rest-mapper
 
 ## Usage
 
-```
+```javascript
 import Mapper from 'rest-mapper';
 
 let API = new Mapper({
   host: 'http://you.api.domain/v1',
+
+  intercept: {
+    request: {
+      before: function () {
+        ui.showLoading();
+      },
+      error: function () {
+        // no god, no
+      }
+    },
+    response: {
+      success: function () {
+        ui.hideLoading();
+      },
+      error: function () {
+        // oh my app
+      }
+    }
+  },
 
   resources: {
     Auth: {
@@ -82,3 +101,14 @@ More docs are coming... But how this lib was build on axios, you can read more a
 ## Test
 
 Tests are coming...
+
+## Versions
+
+### 1.1.0 :cyclone:
+* Added interceptors
+
+### 1.0.0 :star:
+* Create the rest-mapper
+* Call ajax requests build top on axios
+* resources
+* hosts

@@ -5,6 +5,7 @@ class RestEasy {
   constructor(config) {
     this.host = config.host;
     this.resources = config.resources;
+    this.intercept = config.intercept || false;
 
     return this.build(config);
   }
@@ -33,7 +34,53 @@ class RestEasy {
 
     options.url = `${ this.host }${ supplant }`;
 
+    // Intercept
+    this.buildIntercept();
+
     return axios(options);
+  }
+
+  buildIntercept() {
+    // Create Interceptors
+    if (this.intercept) {
+      let intercept = this.intercept;
+
+      // request
+      if (!!intercept.request) {
+        axios.interceptors.request.use(
+          // before send
+          function (config) {
+            if (!!intercept.request.before) intercept.request.before.call(null, config);
+
+            return config;
+          },
+          // request error
+          function (error) {
+            if (!!intercept.request.error) intercept.request.error.call(null, error);
+
+            return Promise.reject(error);
+          }
+        );
+      }
+
+      // response
+      if (!!intercept.response) {
+        axios.interceptors.response.use(
+          // response success
+          function (response) {
+            if (!!intercept.response.success) intercept.response.success.call(null, response);
+
+            return response;
+          },
+          // response error
+          function (error) {
+            if (!!intercept.response.error) intercept.response.error.call(null, error);
+
+            return Promise.reject(error);
+          }
+        );
+      }
+    }
   }
 
   supplant(str, o) {
