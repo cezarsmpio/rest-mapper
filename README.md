@@ -104,6 +104,9 @@ Tests are coming...
 
 ## Versions
 
+### 1.1.1 :zap:
+* Singleton pattern, better performance
+
 ### 1.1.0 :cyclone:
 * Added interceptors
 
