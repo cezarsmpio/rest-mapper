@@ -1,13 +1,20 @@
 import axios from 'axios';
 import assign from 'object-assign';
 
-class RestEasy {
+let restMapperInstance = null;
+
+class RestMapper   {
   constructor(config) {
     this.host = config.host;
     this.resources = config.resources;
     this.intercept = config.intercept || false;
 
-    return this.build(config);
+    // Add singleton
+    if(!restMapperInstance){
+      restMapperInstance = this;
+    }
+
+    return restMapperInstance.build(config);
   }
 
   build(config) {
@@ -91,4 +98,4 @@ class RestEasy {
   }
 }
 
-export default RestEasy;
+export default RestMapper;
