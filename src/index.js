@@ -14,6 +14,9 @@ class RestMapper   {
       restMapperInstance = this;
     }
 
+    // Intercept
+    this.buildIntercept();
+
     return restMapperInstance.build(config);
   }
 
@@ -40,9 +43,6 @@ class RestMapper   {
     let supplant = this.supplant(options.url, options.supplant);
 
     options.url = `${ this.host }${ supplant }`;
-
-    // Intercept
-    this.buildIntercept();
 
     return axios(options);
   }
