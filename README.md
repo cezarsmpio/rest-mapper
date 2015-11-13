@@ -94,7 +94,7 @@ API.User
   });
 ```
 
-#### Get all products pass params by query string
+#### Get all products by query string
 ```javascript
 // GET /products?page=2
 
@@ -110,7 +110,7 @@ API.Products
 ```
 
 
-#### Get products by range date example
+#### Get products by range date
 ```javascript
 // GET /products/date/2015-11-30/2015-12-25?status=active
 
