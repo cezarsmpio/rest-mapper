@@ -18,18 +18,18 @@ let API = new Mapper({
 
   intercept: {
     request: {
-      before: function () {
+      before: function (config) {
         ui.showLoading();
       },
-      error: function () {
+      error: function (err) {
         // no god, no
       }
     },
     response: {
-      success: function () {
+      success: function (responseData) {
         ui.hideLoading();
       },
-      error: function () {
+      error: function (err) {
         // oh my app
       }
     }
@@ -41,17 +41,23 @@ let API = new Mapper({
       recovery: { url: '/access/recovery' }
     },
     User: {
-      save: { url: '/users/{id}', method: 'put' }
+      save: { url: '/users/{id}', method: 'put' } // {id} is supplant
     },
     Products: {
-      get: { url: '/products' }
+      get: { url: '/products' },
+      getByDate: { url: '/products/date/{startDate}/{endDate}' }
     }
   }
 });
+```
+
+#### Pass data using methods body, put or patch
+```javascript
+// POST /access/signin REQUEST username=foo&password=bar
 
 API.Auth
   .signin({
-    body: {
+    data: {
       username: 'foo',
       password: 'bar'
     }
@@ -59,7 +65,12 @@ API.Auth
   .then((data) => {
     // response
   });
+```
 
+
+#### Supplant example
+```javascript
+// POST /users/3
 
 API.User
   .save({
@@ -81,12 +92,16 @@ API.User
   .catch((err) => {
     // error
   });
+```
 
+#### Get all products pass params by query string
+```javascript
+// GET /products?page=2
 
 API.Products
   .get({
     params: {
-      page: 2 // ?page=2
+      page: 2
     }
   })
   .then((data) => {
@@ -94,15 +109,39 @@ API.Products
   });
 ```
 
+
+#### Get products by range date example
+```javascript
+// GET /products/date/2015-11-30/2015-12-25?status=active
+
+API.Products
+  .getByDate({
+    supplant: { startDate: '2015-11-30', endDate: '2015-12-25' },
+    params: { status: 'active' }
+  })
+  .then((data) => {
+    // response
+  })
+  .catch((err) => {
+    // error
+  })
+  .then(() => {
+    // complete
+  });
+```
+
 ## Docs
 
-More docs are coming... But how this lib was build on axios, you can read more about here https://github.com/mzabriskie/axios
+Docs are coming... But how this lib was build on axios, you can read more about here https://github.com/mzabriskie/axios
 
 ## Test
 
 Tests are coming...
 
 ## Versions
+
+### 1.1.2 :snowflake:
+* Change intercept logic
 
 ### 1.1.1 :zap:
 * Singleton pattern, better performance
