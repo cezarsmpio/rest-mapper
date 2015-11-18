@@ -155,16 +155,19 @@ Tests are coming...
 
 ## Versions
 
-### 1.1.2 :snowflake:
+#### 1.2.0 :dizzy:
+* Added default params for all requests
+
+#### 1.1.2 :snowflake:
 * Change intercept logic
 
-### 1.1.1 :zap:
+#### 1.1.1 :zap:
 * Singleton pattern, better performance
 
-### 1.1.0 :cyclone:
+#### 1.1.0 :cyclone:
 * Added interceptors
 
-### 1.0.0 :star:
+#### 1.0.0 :star:
 * Create the rest-mapper
 * Call ajax requests build top on axios
 * resources
