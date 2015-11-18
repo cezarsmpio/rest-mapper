@@ -1,5 +1,5 @@
 import axios from 'axios';
-import assign from 'object-assign';
+import merge from 'object-merge';
 
 let restMapperInstance = null;
 
@@ -8,6 +8,7 @@ class RestMapper   {
     this.host = config.host;
     this.resources = config.resources;
     this.intercept = config.intercept || false;
+    this.defaults = config.defaults || {};
 
     // Add singleton
     if(!restMapperInstance){
@@ -38,8 +39,8 @@ class RestMapper   {
     return obj;
   }
 
-  call(obj, params) {
-    let options = assign({}, obj, params);
+  call(resources, params) {
+    let options = merge({}, this.defaults, resources, params);
     let supplant = this.supplant(options.url, options.supplant);
 
     options.url = `${ this.host }${ supplant }`;

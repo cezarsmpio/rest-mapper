@@ -35,6 +35,21 @@ let API = new Mapper({
     }
   },
 
+  // Default options for all requests
+  defaults: {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    params: {
+      category: 'all'
+    },
+    data: {
+      key: 'my_key_123'
+    },
+    timeout: 3000
+  },
+
   resources: {
     Auth: {
       signin: { url: '/access/signin', method: 'post' },
