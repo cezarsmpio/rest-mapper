@@ -30,9 +30,9 @@ class RestMapper   {
 
       // Percorre os filhos do resource
       for (let method in this.resources[prop]) {
-        let m = this.resources[prop][method];
+        let resources = this.resources[prop][method];
 
-        obj[prop][method] = this.call.bind(this, m);
+        obj[prop][method] = this.call.bind(this, resources);
       }
     }
 
@@ -41,9 +41,13 @@ class RestMapper   {
 
   call(resources, params) {
     let options = merge({}, this.defaults, resources, params);
-    let supplant = this.supplant(options.url, options.supplant);
 
-    options.url = `${ this.host }${ supplant }`;
+    options.url = this.host;
+
+    if ('url' in options && 'supplant' in options) {
+      let supplant = this.supplant(options.url, options.supplant);
+      options.url = `${ this.host }${ supplant }`;
+    }
 
     return axios(options);
   }
