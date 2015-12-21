@@ -156,7 +156,7 @@ Tests are coming...
 ## Versions
 
 ##### 1.2.2
-* Url with no supllant bug 1.2.1 fixed
+* Url without supllant bug 1.2.1 fixed
 
 ##### 1.2.1
 * Supplant bug 1.2.0 fixed
