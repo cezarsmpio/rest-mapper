@@ -42,11 +42,11 @@ class RestMapper   {
   call(resources, params) {
     let options = merge({}, this.defaults, resources, params);
 
-    options.url = this.host;
+    options.url = `${this.host}${resources.url}`;
 
     if ('url' in options && 'supplant' in options) {
       let supplant = this.supplant(options.url, options.supplant);
-      options.url = `${ this.host }${ supplant }`;
+      options.url = `${this.host}${supplant}`;
     }
 
     return axios(options);
