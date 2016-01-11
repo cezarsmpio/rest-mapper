@@ -1,5 +1,4 @@
 import axios from 'axios';
-import merge from 'object-merge';
 
 let restMapperInstance = null;
 
@@ -40,7 +39,11 @@ class RestMapper   {
   }
 
   call(resources, params) {
-    let options = merge({}, this.defaults, resources, params);
+    let options = {
+      ...this.defaults,
+      ...resources,
+      ...params
+    };
 
     options.url = `${this.host}${resources.url}`;
 

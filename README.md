@@ -155,6 +155,9 @@ Tests are coming...
 
 ## Versions
 
+##### 1.2.3
+* Use spread operator instead object-merge
+
 ##### 1.2.2
 * Url without supllant bug 1.2.1 fixed
 
