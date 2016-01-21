@@ -155,28 +155,31 @@ Tests are coming...
 
 ## Versions
 
-##### 1.2.3
+###### 1.2.4
+* Supplant double host fixed
+
+###### 1.2.3
 * Use spread operator instead object-merge
 
-##### 1.2.2
+###### 1.2.2
 * Url without supllant bug 1.2.1 fixed
 
-##### 1.2.1
+###### 1.2.1
 * Supplant bug 1.2.0 fixed
 
-##### 1.2.0 :dizzy:
+###### 1.2.0 :dizzy:
 * Added default params for all requests
 
-##### 1.1.2 :snowflake:
+###### 1.1.2 :snowflake:
 * Change intercept logic
 
-##### 1.1.1 :zap:
+###### 1.1.1 :zap:
 * Singleton pattern, better performance
 
-##### 1.1.0 :cyclone:
+###### 1.1.0 :cyclone:
 * Added interceptors
 
-##### 1.0.0 :star:
+###### 1.0.0 :star:
 * Create the rest-mapper
 * Call ajax requests build top on axios
 * resources
