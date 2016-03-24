@@ -32,7 +32,8 @@
   },
   "homepage": "https://github.com/CezarLuiz0/rest-mapper#readme",
   "dependencies": {
-    "axios": "^0.7.0"
+    "axios": "^0.7.0",
+    "object-merge": "^2.5.1"
   },
   "devDependencies": {
     "babel-cli": "^6.1.2",
