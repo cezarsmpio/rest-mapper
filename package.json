@@ -1,6 +1,6 @@
 {
   "name": "rest-mapper",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "A easy rest mapper for JS",
   "main": "lib/index.js",
   "scripts": {

@@ -155,6 +155,9 @@ Tests are coming...
 
 ## Versions
 
+###### 1.2.5
+* Url hotfix
+
 ###### 1.2.4
 * Supplant double host fixed
 
