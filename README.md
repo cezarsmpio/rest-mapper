@@ -156,7 +156,7 @@ Tests are coming...
 ## Versions
 
 ###### 1.3.0
-* Update axios to 0.12.0 and change object-merge to deepmerge
+* Updated axios to 0.12.0 and changed object-merge to deepmerge
 
 ###### 1.2.6
 * Some hotfixes around URL and Axios Update
