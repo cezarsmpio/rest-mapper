@@ -1,6 +1,6 @@
 {
   "name": "rest-mapper",
-  "version": "1.2.6",
+  "version": "1.3.1",
   "description": "A easy rest mapper for JS",
   "main": "lib/index.js",
   "scripts": {
@@ -32,8 +32,8 @@
   },
   "homepage": "https://github.com/CezarLuiz0/rest-mapper#readme",
   "dependencies": {
-    "axios": "^0.11.0",
-    "object-merge": "^2.5.1"
+    "axios": "^0.12.0",
+    "deepmerge": "^0.2.10"
   },
   "devDependencies": {
     "babel-cli": "^6.1.2",

@@ -1,9 +1,9 @@
 import axios from 'axios';
-import merge from 'object-merge';
+import merge from 'deepmerge';
 
 let restMapperInstance = null;
 
-class RestMapper   {
+class RestMapper {
   constructor(config) {
     this.host = config.host;
     this.resources = config.resources;
@@ -40,7 +40,9 @@ class RestMapper   {
   }
 
   call(resources, params) {
-    let options = merge({}, this.defaults, resources, params);
+    let options = merge({}, this.defaults);
+    options = merge(options, resources);
+    options = merge(options, params);
 
     options.url = ('url' in resources) ? `${this.host}${resources.url}` : this.host;
 
