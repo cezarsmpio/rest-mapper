@@ -6,7 +6,7 @@ Inspiration on Mappersmith - https://github.com/tulios/mappersmith
 
 ## Install
 
-```
+```javascript
 npm install rest-mapper --save
 ```
 
@@ -15,7 +15,7 @@ npm install rest-mapper --save
 For browsers that has not support for __Promise__, please use some polyfill.
 
 #### Browsers with webpack and babel
-```
+```javascript
 import Mapper from 'rest-mapper';
 ```
 
