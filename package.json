@@ -1,11 +1,11 @@
 {
   "name": "rest-mapper",
-  "version": "1.3.1",
-  "description": "A easy rest mapper for JS",
-  "main": "lib/index.js",
+  "version": "1.4.0",
+  "description": "An easy rest mapper for browsers and nodejs.",
+  "main": "lib/rest-mapper.js",
   "scripts": {
     "test": "npm test",
-    "compile": "babel --presets es2015 src/ -d lib/",
+    "compile": "babel --presets es2015 ./rest-mapper.js -o lib/rest-mapper.js",
     "prepublish": "npm run compile"
   },
   "repository": {
@@ -33,11 +33,12 @@
   "homepage": "https://github.com/CezarLuiz0/rest-mapper#readme",
   "dependencies": {
     "axios": "^0.12.0",
-    "deepmerge": "^0.2.10"
+    "object-merge": "^2.5.1"
   },
   "devDependencies": {
     "babel-cli": "^6.1.2",
     "babel-preset-es2015": "^6.1.2",
-    "babel-preset-stage-2": "^6.3.13"
+    "babel-preset-stage-2": "^6.3.13",
+    "jasmine": "^2.4.1"
   }
 }
