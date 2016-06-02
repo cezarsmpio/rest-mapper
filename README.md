@@ -257,14 +257,14 @@ Name | Type | Required? | Default | More
 `method`|`string`|No|`get`|-
 `supplant`|`object`|No|-|Use `supplant` only when your `url` is like `/users/{id}`. Supplant will replace `{id}` for your `id` value from object.
 
-For others properties like `params`, `data`, `headers`, `timeout`, etc, please, read the ![axios documentation](https://github.com/mzabriskie/axios).
+For others properties like `params`, `data`, `headers`, `timeout`, etc, please, read the [axios documentation](https://github.com/mzabriskie/axios).
 
 ##### Crud
 
 Name | Type | Required? | Default | More
 -----|------|-----------|---------|-----
 `baseURL`|`string`|Yes|-|Your `baseURL` will be the base for the methods that will created.
-`defaults`|`object`|No|-|Axios request object. For more information, please, read the ![axios documentation](https://github.com/mzabriskie/axios).
+`defaults`|`object`|No|-|Axios request object. For more information, please, read the [axios documentation](https://github.com/mzabriskie/axios).
 
 When you use the `crud`, you will have five methods (assuming your base is `/users`):
 
