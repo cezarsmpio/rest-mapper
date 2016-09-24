@@ -15,7 +15,6 @@ class RestMapper {
     this.host = c.host;
     this.resources = c.resources;
     this.cruds = c.cruds;
-    this.intercept = c.intercept;
 
     // Defaults
     const defaults = {
@@ -30,7 +29,7 @@ class RestMapper {
     }));
 
     // Intercept
-    this.buildIntercept();
+    this.buildIntercept(c);
 
     return this.build(c);
   }
@@ -100,23 +99,23 @@ class RestMapper {
     return this.axios.request(options);
   }
 
-  buildIntercept() {
+  buildIntercept(c) {
     // Create Interceptors
-    if (this.intercept) {
-      let intercept = this.intercept;
+    if ('intercept' in c) {
+      let intercept = c.intercept;
 
       // request
-      if (!!intercept.request) {
-        axios.interceptors.request.use(
+      if ('request' in intercept) {
+        this.axios.interceptors.request.use(
           // before send
           function (config) {
-            if (!!intercept.request.before) intercept.request.before(config);
+            if ('before' in intercept.request) intercept.request.before(config);
 
             return config;
           },
           // request error
           function (error) {
-            if (!!intercept.request.error) intercept.request.error(error);
+            if ('error' in intercept.request) intercept.request.error(error);
 
             return Promise.reject(error);
           }
@@ -124,17 +123,17 @@ class RestMapper {
       }
 
       // response
-      if (!!intercept.response) {
-        axios.interceptors.response.use(
+      if ('response' in intercept) {
+        this.axios.interceptors.response.use(
           // response success
           function (response) {
-            if (!!intercept.response.success) intercept.response.success(response);
+            if ('success' in intercept.response) intercept.response.success(response);
 
             return response;
           },
           // response error
           function (error) {
-            if (!!intercept.response.error) intercept.response.error(error);
+            if ('error' in intercept.response) intercept.response.error(error);
 
             return Promise.reject(error);
           }
