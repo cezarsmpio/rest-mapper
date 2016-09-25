@@ -110,10 +110,14 @@ class RestMapper {
           // before send
           function (config) {
             if ('before' in intercept.request) intercept.request.before(config);
+
+            return config;
           },
           // request error
           function (error) {
             if ('error' in intercept.request) intercept.request.error(error);
+
+            return Promise.reject(error);
           }
         );
       }
@@ -124,10 +128,14 @@ class RestMapper {
           // response success
           function (response) {
             if ('success' in intercept.response) intercept.response.success(response);
+
+            return response;
           },
           // response error
           function (error) {
             if ('error' in intercept.response) intercept.response.error(error);
+
+            return Promise.reject(error);
           }
         );
       }
