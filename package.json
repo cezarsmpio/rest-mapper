@@ -1,6 +1,6 @@
 {
   "name": "rest-mapper",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "An easy rest mapper for browsers and nodejs.",
   "main": "lib/rest-mapper.js",
   "scripts": {
@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/CezarLuiz0/rest-mapper#readme",
   "dependencies": {
-    "axios": "^0.12.0",
+    "axios": "^0.14.0",
     "object-merge": "^2.5.1"
   },
   "devDependencies": {
