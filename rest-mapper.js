@@ -21,7 +21,7 @@ class RestMapper {
       method: 'get'
     };
 
-    this.defaults = merge({}, defaults, c.defaults);
+    this.defaults = merge({}, defaults, c.defaults || {});
 
     // Create an axios instance
     this.axios = axios.create(merge({}, this.defaults, {

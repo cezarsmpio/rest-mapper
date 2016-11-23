@@ -1,11 +1,11 @@
 {
   "name": "rest-mapper",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "An easy rest mapper for browsers and nodejs.",
   "main": "lib/rest-mapper.js",
   "scripts": {
     "test": "npm test",
-    "compile": "babel --presets es2015 ./rest-mapper.js -o lib/rest-mapper.js",
+    "compile": "babel --presets es2015 ./rest-mapper.js -d lib",
     "prepublish": "npm run compile"
   },
   "repository": {
