@@ -172,7 +172,7 @@ let Github = new Mapper({
   cruds: {
     Users: { baseURL: '/users' },
     Issues: { baseURL: '/issues' },
-    Repo: { 
+    Repo: {
       baseURL: '/repositories',
       defaults: {
         headers: {
@@ -292,6 +292,9 @@ jasmine
 ```
 
 ## Versions / Changelog
+
+###### 1.4.5
+* Fixed a bunch of issues around the `rest-mapper`
 
 ###### 1.4.0
 * Removed singleton, because you can have many instances for multiple hosts
