@@ -1,6 +1,6 @@
 {
   "name": "rest-mapper",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "An easy rest mapper for browsers and nodejs.",
   "main": "lib/rest-mapper.js",
   "scripts": {

@@ -93,7 +93,7 @@ class RestMapper {
     options.url = resources.hasOwnProperty('url') ? resources.url : '';
 
     if (options.hasOwnProperty('supplant')) {
-      options.url = this.supplant(options.url, options.supplant);
+      options.url = this._supplant(options.url, options.supplant);
     }
 
     return this.axios.request(options);
@@ -101,21 +101,21 @@ class RestMapper {
 
   buildIntercept(c) {
     // Create Interceptors
-    if ('intercept' in c) {
-      let intercept = c.intercept;
+    if (c.hasOwnProperty('intercept') && this._type(c) === 'object') {
+      let { intercept } = c;
 
       // request
-      if ('request' in intercept) {
+      if (intercept.hasOwnProperty('request')) {
         this.axios.interceptors.request.use(
           // before send
           function (config) {
-            if ('before' in intercept.request) intercept.request.before(config);
+            if (intercept.request.hasOwnProperty('before')) intercept.request.before(config);
 
             return config;
           },
           // request error
           function (error) {
-            if ('error' in intercept.request) intercept.request.error(error);
+            if (intercept.request.hasOwnProperty('error')) intercept.request.error(error);
 
             return Promise.reject(error);
           }
@@ -123,17 +123,17 @@ class RestMapper {
       }
 
       // response
-      if ('response' in intercept) {
+      if (intercept.hasOwnProperty('response')) {
         this.axios.interceptors.response.use(
           // response success
           function (response) {
-            if ('success' in intercept.response) intercept.response.success(response);
+            if (intercept.response.hasOwnProperty('success')) intercept.response.success(response);
 
             return response;
           },
           // response error
           function (error) {
-            if ('error' in intercept.response) intercept.response.error(error);
+            if (intercept.response.hasOwnProperty('error')) intercept.response.error(error);
 
             return Promise.reject(error);
           }
@@ -142,11 +142,19 @@ class RestMapper {
     }
   }
 
-  supplant(str, o) {
+  _supplant(str, o) {
     return str.replace(/{([^{}]*)}/g, function (a, b) {
       var r = o[b];
       return typeof r === 'string' || typeof r === 'number' ? r : a;
     });
+  }
+
+  _type(obj) {
+    return Object.prototype.toString.call(obj)
+      .trim()
+      .toLowerCase()
+      .split(' ')[1]
+      .replace(/\]$/, '');
   }
 }
 
