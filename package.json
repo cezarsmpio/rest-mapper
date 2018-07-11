@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/CezarLuiz0/rest-mapper#readme",
   "dependencies": {
-    "axios": "^0.17.0",
+    "axios": "^0.18.0",
     "object-merge": "^2.5.1"
   },
   "devDependencies": {
