@@ -44,7 +44,7 @@ npm trusted publisher configuration:
 - Environment: `npm`
 - Allowed action: direct `npm publish`
 
-The release job runs in the `npm` GitHub environment and requires the `id-token: write` permission. The action installs semantic-release and its standard plugins in the workflow runtime; they are intentionally not package dependencies, which keeps the library's dependency graph and audit surface small.
+The release job runs in the `npm` GitHub environment and requires the `id-token: write` permission. `@semantic-release/npm@13.2.0` is pinned as an action extra plugin because that version supports npm OIDC token exchange. The action installs semantic-release and its plugins in the workflow runtime; they are intentionally not package dependencies, which keeps the library's dependency graph and audit surface small.
 
 ## Code style
 

@@ -28,7 +28,6 @@ jobs:
         with:
           node-version-file: .nvmrc
           package-manager-cache: false
-          registry-url: https://registry.npmjs.org
       - run: npm ci
       - run: npm run verify
       - name: Release
@@ -40,6 +39,7 @@ jobs:
           extra_plugins: |
             @semantic-release/changelog@7.0.0
             @semantic-release/git@11.0.1
+            @semantic-release/npm@13.2.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
