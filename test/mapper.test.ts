@@ -5,18 +5,7 @@ import {
   type MapperConfig,
   type RequestOptions,
 } from '../src/index.js';
-import { jsonResponse } from './helpers.js';
-
-type FetchHandler = (
-  input: string | URL | Request,
-  init?: RequestInit,
-) => Promise<Response>;
-
-function stubFetch(handler: FetchHandler = async () => jsonResponse({ ok: true })) {
-  const fetchMock = vi.fn(handler);
-  vi.stubGlobal('fetch', fetchMock);
-  return fetchMock;
-}
+import { jsonResponse, stubFetch } from './helpers.js';
 
 function objectWithKey(
   key: string,

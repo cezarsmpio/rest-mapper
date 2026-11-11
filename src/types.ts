@@ -60,20 +60,37 @@ export interface RequestOptionsBase {
   cache?: RequestCache;
   redirect?: RequestRedirect;
   maxRedirects?: number;
+  maxContentLength?: number;
+  maxBodyLength?: number;
+  timeoutErrorMessage?: string;
+  responseEncoding?: string;
+  xsrfCookieName?: string;
+  xsrfHeaderName?: string;
+  socketPath?: string;
+  allowAbsoluteUrls?: boolean;
+  allowedProtocols?: string[];
+  decompress?: boolean;
   onUploadProgress?: (progressEvent: unknown) => void;
   onDownloadProgress?: (progressEvent: unknown) => void;
   transformRequest?: unknown;
   transformResponse?: unknown;
   paramsSerializer?: unknown;
+  beforeRedirect?: unknown;
+  transitional?: unknown;
+  fetchOptions?: unknown;
+  formSerializer?: unknown;
+  maxRate?: unknown;
+  env?: unknown;
   proxy?: unknown;
+  httpAgent?: unknown;
+  httpsAgent?: unknown;
   cancelToken?: unknown;
 }
 
-export type RequestOptions = RequestOptionsBase & Record<string, unknown>;
+export type RequestOptions = RequestOptionsBase;
 
 export interface ResolvedRequestConfig
   extends Omit<RequestOptionsBase, 'params' | 'query' | 'method'> {
-  [key: string]: unknown;
   url: string;
   method: string;
   params: Params;

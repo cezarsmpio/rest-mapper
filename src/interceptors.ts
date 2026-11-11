@@ -41,11 +41,6 @@ export async function handleResponseError(
   const intercept = interceptors ? interceptors.response : undefined;
   if (!intercept?.error) throw error;
 
-  try {
-    await intercept.error(error);
-  } catch (interceptorError) {
-    throw interceptorError;
-  }
-
+  await intercept.error(error);
   throw error;
 }

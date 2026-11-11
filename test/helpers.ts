@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import type {
   MapperResponse,
   ResolvedRequestConfig,
@@ -53,6 +54,19 @@ export function jsonResponse(
       ...(init.headers as Record<string, string> | undefined),
     },
   });
+}
+
+export type FetchHandler = (
+  input: string | URL | Request,
+  init?: RequestInit,
+) => Promise<Response>;
+
+export function stubFetch(
+  handler: FetchHandler = async () => jsonResponse({ ok: true }),
+) {
+  const fetchMock = vi.fn(handler);
+  vi.stubGlobal('fetch', fetchMock);
+  return fetchMock;
 }
 
 export const flushPromises = async (): Promise<void> => {

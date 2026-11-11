@@ -89,6 +89,29 @@ function createCrudMethods(
   };
 }
 
+function buildMapper(
+  config: MapperConfig,
+  factory: RequestFactory,
+): Record<string, Record<string, MapperRequest>> {
+  const mapper: Record<string, Record<string, MapperRequest>> = {};
+
+  for (const [name, crud] of Object.entries(config.cruds ?? {})) {
+    mapper[name] = { ...createCrudMethods(crud, factory) };
+  }
+
+  for (const [name, resource] of Object.entries(config.resources ?? {})) {
+    const methods = mapper[name] ?? {};
+
+    for (const [methodName, definition] of Object.entries(resource)) {
+      methods[methodName] = factory(definition);
+    }
+
+    mapper[name] = methods;
+  }
+
+  return mapper;
+}
+
 export function createMapper<C extends MapperConfig = MapperConfig>(
   config?: C,
 ): Mapper<C> {
@@ -105,23 +128,6 @@ export function createMapper<C extends MapperConfig = MapperConfig>(
     resolvedConfig.host ?? '',
   );
   const factory = createRequestFactory(defaults, interceptors, transport);
-  const mapper: Record<string, Record<string, MapperRequest>> = {};
 
-  for (const [name, crud] of Object.entries(resolvedConfig.cruds ?? {})) {
-    mapper[name] = { ...createCrudMethods(crud, factory) };
-  }
-
-  for (const [name, resource] of Object.entries(
-    resolvedConfig.resources ?? {},
-  )) {
-    const methods = mapper[name] ?? {};
-
-    for (const [methodName, definition] of Object.entries(resource)) {
-      methods[methodName] = factory(definition);
-    }
-
-    mapper[name] = methods;
-  }
-
-  return mapper as Mapper<C>;
+  return buildMapper(resolvedConfig, factory) as Mapper<C>;
 }

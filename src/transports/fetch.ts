@@ -7,9 +7,20 @@ import type {
 } from '../types.js';
 import { buildRequestUrl } from '../url.js';
 
+const HTTP_OK = 200;
+const HTTP_MULTIPLE_CHOICES = 300;
+const HTTP_NO_CONTENT = 204;
+const HTTP_RESET_CONTENT = 205;
+
 interface AbortBundle {
   signal: AbortSignal | undefined;
   cleanup: () => void;
+}
+
+interface PreparedFetchRequest {
+  url: string;
+  init: RequestInit;
+  abort: AbortBundle;
 }
 
 function createAbortBundle(
@@ -77,6 +88,23 @@ function encodeBasicAuth(
   return `Basic ${btoa(value)}`;
 }
 
+function createHeaders(config: ResolvedRequestConfig): MapperHeaders {
+  const headers: MapperHeaders = { ...config.headers };
+
+  if (
+    config.auth &&
+    !headers.authorization &&
+    (config.auth.username !== undefined || config.auth.password !== undefined)
+  ) {
+    headers.authorization = encodeBasicAuth(
+      config.auth.username,
+      config.auth.password,
+    );
+  }
+
+  return headers;
+}
+
 function createBody(
   config: ResolvedRequestConfig,
   headers: MapperHeaders,
@@ -111,17 +139,22 @@ function parseJson(text: string): unknown {
   }
 }
 
+function isEmptyResponse(
+  response: Response,
+  config: ResolvedRequestConfig,
+): boolean {
+  return (
+    response.status === HTTP_NO_CONTENT ||
+    response.status === HTTP_RESET_CONTENT ||
+    config.method === 'head'
+  );
+}
+
 async function parseResponseData(
   response: Response,
   config: ResolvedRequestConfig,
 ): Promise<unknown> {
-  if (
-    response.status === 204 ||
-    response.status === 205 ||
-    config.method === 'head'
-  ) {
-    return '';
-  }
+  if (isEmptyResponse(response, config)) return '';
 
   switch (config.responseType) {
     case 'arraybuffer':
@@ -148,11 +181,82 @@ async function parseResponseData(
   }
 }
 
-function getErrorMessage(error: unknown, signal: AbortSignal | undefined): string {
+async function mapFetchResponse(
+  response: Response,
+  config: ResolvedRequestConfig,
+): Promise<MapperResponse> {
+  return {
+    data: await parseResponseData(response, config),
+    status: response.status,
+    statusText: response.statusText,
+    headers: Object.fromEntries(response.headers.entries()),
+    config,
+    request: response,
+  };
+}
+
+function isSuccessfulStatus(status: number): boolean {
+  return status >= HTTP_OK && status < HTTP_MULTIPLE_CHOICES;
+}
+
+function assertValidStatus(
+  response: MapperResponse,
+  config: ResolvedRequestConfig,
+): void {
+  const validateStatus = config.validateStatus ?? isSuccessfulStatus;
+
+  if (!validateStatus(response.status)) {
+    throw new RestMapperError(
+      `Request failed with status code ${response.status}`,
+      {
+        config,
+        status: response.status,
+        response,
+      },
+    );
+  }
+}
+
+function getErrorMessage(
+  error: unknown,
+  signal: AbortSignal | undefined,
+): string {
   if (signal?.reason instanceof Error) return signal.reason.message;
   if (error instanceof Error) return error.message;
 
   return 'Network request failed';
+}
+
+function prepareFetchRequest(
+  host: string,
+  config: ResolvedRequestConfig,
+): PreparedFetchRequest {
+  const headers = createHeaders(config);
+  const body = createBody(config, headers);
+  const abort = createAbortBundle(
+    config.signal as AbortSignal | undefined,
+    config.timeout,
+  );
+  const credentials =
+    config.credentials ??
+    (config.withCredentials === true ? 'include' : undefined);
+
+  const init: RequestInit = {
+    method: config.method.toUpperCase(),
+    headers,
+    ...(body === undefined ? {} : { body }),
+    ...(abort.signal === undefined ? {} : { signal: abort.signal }),
+    ...(credentials === undefined ? {} : { credentials }),
+    ...(config.mode === undefined ? {} : { mode: config.mode }),
+    ...(config.cache === undefined ? {} : { cache: config.cache }),
+    ...(config.redirect === undefined ? {} : { redirect: config.redirect }),
+  };
+
+  return {
+    url: buildRequestUrl(host, config.url, config.params),
+    init,
+    abort,
+  };
 }
 
 export class FetchTransport implements Transport {
@@ -172,79 +276,35 @@ export class FetchTransport implements Transport {
       );
     }
 
-    const headers: MapperHeaders = { ...config.headers };
-
-    if (
-      config.auth &&
-      !headers.authorization &&
-      (config.auth.username !== undefined || config.auth.password !== undefined)
-    ) {
-      headers.authorization = encodeBasicAuth(
-        config.auth.username,
-        config.auth.password,
-      );
-    }
-
-    const body = createBody(config, headers);
-    const abort = createAbortBundle(
-      config.signal as AbortSignal | undefined,
-      config.timeout,
-    );
-    const credentials =
-      config.credentials ??
-      (config.withCredentials === true ? 'include' : undefined);
-
-    const init: RequestInit = {
-      method: config.method.toUpperCase(),
-      headers,
-      ...(body === undefined ? {} : { body }),
-      ...(abort.signal === undefined ? {} : { signal: abort.signal }),
-      ...(credentials === undefined ? {} : { credentials }),
-      ...(config.mode === undefined ? {} : { mode: config.mode }),
-      ...(config.cache === undefined ? {} : { cache: config.cache }),
-      ...(config.redirect === undefined ? {} : { redirect: config.redirect }),
-    };
-
-    let response: Response;
+    const prepared = prepareFetchRequest(this.#host, config);
 
     try {
-      response = await fetchImplementation(
-        buildRequestUrl(this.#host, config.url, config.params),
-        init,
-      );
-    } catch (cause) {
-      throw new RestMapperError(getErrorMessage(cause, abort.signal), {
-        config,
-        cause,
-      });
+      let response: Response;
+
+      try {
+        response = await fetchImplementation(prepared.url, prepared.init);
+      } catch (cause) {
+        throw new RestMapperError(
+          getErrorMessage(cause, prepared.abort.signal),
+          { config, cause },
+        );
+      }
+
+      let mapped: MapperResponse;
+
+      try {
+        mapped = await mapFetchResponse(response, config);
+      } catch (cause) {
+        throw new RestMapperError(
+          getErrorMessage(cause, prepared.abort.signal),
+          { config, cause },
+        );
+      }
+
+      assertValidStatus(mapped, config);
+      return mapped;
     } finally {
-      abort.cleanup();
+      prepared.abort.cleanup();
     }
-
-    const mapped: MapperResponse = {
-      data: await parseResponseData(response, config),
-      status: response.status,
-      statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries()),
-      config,
-      request: response,
-    };
-
-    const validateStatus =
-      config.validateStatus ??
-      ((status: number): boolean => status >= 200 && status < 300);
-
-    if (!validateStatus(response.status)) {
-      throw new RestMapperError(
-        `Request failed with status code ${response.status}`,
-        {
-          config,
-          status: response.status,
-          response: mapped,
-        },
-      );
-    }
-
-    return mapped;
   }
 }

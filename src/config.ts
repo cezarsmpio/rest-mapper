@@ -71,6 +71,41 @@ function assertInterceptors(
   }
 }
 
+function assertResourcesConfig(resources: unknown): void {
+  if (!isPlainObject(resources)) {
+    fail('config.resources', 'a plain object');
+  }
+
+  for (const [resourceName, resource] of Object.entries(resources)) {
+    assertSafeKey(resourceName, `config.resources.${resourceName}`);
+    if (!isPlainObject(resource)) {
+      fail(`config.resources.${resourceName}`, 'a plain object');
+    }
+
+    for (const [methodName, definition] of Object.entries(resource)) {
+      assertSafeKey(
+        methodName,
+        `config.resources.${resourceName}.${methodName}`,
+      );
+      assertResourceDefinition(
+        definition,
+        `config.resources.${resourceName}.${methodName}`,
+      );
+    }
+  }
+}
+
+function assertCrudsConfig(cruds: unknown): void {
+  if (!isPlainObject(cruds)) {
+    fail('config.cruds', 'a plain object');
+  }
+
+  for (const [crudName, crud] of Object.entries(cruds)) {
+    assertSafeKey(crudName, `config.cruds.${crudName}`);
+    assertCrudDefinition(crud, `config.cruds.${crudName}`);
+  }
+}
+
 export function assertMapperConfig(
   config: unknown,
 ): asserts config is MapperConfig {
@@ -95,38 +130,11 @@ export function assertMapperConfig(
   assertRequestOptionsObject(config.defaults, 'config.defaults');
 
   if (config.resources !== undefined) {
-    if (!isPlainObject(config.resources)) {
-      fail('config.resources', 'a plain object');
-    }
-
-    for (const [resourceName, resource] of Object.entries(config.resources)) {
-      assertSafeKey(resourceName, `config.resources.${resourceName}`);
-      if (!isPlainObject(resource)) {
-        fail(`config.resources.${resourceName}`, 'a plain object');
-      }
-
-      for (const [methodName, definition] of Object.entries(resource)) {
-        assertSafeKey(
-          methodName,
-          `config.resources.${resourceName}.${methodName}`,
-        );
-        assertResourceDefinition(
-          definition,
-          `config.resources.${resourceName}.${methodName}`,
-        );
-      }
-    }
+    assertResourcesConfig(config.resources);
   }
 
   if (config.cruds !== undefined) {
-    if (!isPlainObject(config.cruds)) {
-      fail('config.cruds', 'a plain object');
-    }
-
-    for (const [crudName, crud] of Object.entries(config.cruds)) {
-      assertSafeKey(crudName, `config.cruds.${crudName}`);
-      assertCrudDefinition(crud, `config.cruds.${crudName}`);
-    }
+    assertCrudsConfig(config.cruds);
   }
 }
 
