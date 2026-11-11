@@ -1,7 +1,7 @@
-const BLOCKED_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+const BLOCKED_KEYS = ['__proto__', 'constructor', 'prototype'];
 
 export function isBlockedKey(key: PropertyKey): boolean {
-  return typeof key === 'string' && BLOCKED_KEYS.has(key);
+  return typeof key === 'string' && BLOCKED_KEYS.includes(key);
 }
 
 export function isPlainObject(

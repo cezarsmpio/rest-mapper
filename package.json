@@ -20,10 +20,7 @@
     "./package.json": "./package.json"
   },
   "files": [
-    "dist",
-    "CHANGELOG.md",
-    "LICENSE",
-    "README.md"
+    "dist"
   ],
   "sideEffects": false,
   "scripts": {

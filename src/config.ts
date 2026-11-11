@@ -60,10 +60,10 @@ function assertInterceptors(
     if (intercept === undefined) continue;
     if (!isPlainObject(intercept)) fail(`${path}.${side}`, 'a plain object');
 
-    for (const [handler, fn] of Object.entries(intercept)) {
+    for (const handler of ['before', 'success', 'error'] as const) {
       if (
-        (handler === 'before' || handler === 'success' || handler === 'error') &&
-        typeof fn !== 'function'
+        intercept[handler] !== undefined &&
+        typeof intercept[handler] !== 'function'
       ) {
         fail(`${path}.${side}.${handler}`, 'a function');
       }
@@ -77,20 +77,14 @@ function assertResourcesConfig(resources: unknown): void {
   }
 
   for (const [resourceName, resource] of Object.entries(resources)) {
-    assertSafeKey(resourceName, `config.resources.${resourceName}`);
-    if (!isPlainObject(resource)) {
-      fail(`config.resources.${resourceName}`, 'a plain object');
-    }
+    const resourcePath = `config.resources.${resourceName}`;
+    assertSafeKey(resourceName, resourcePath);
+    if (!isPlainObject(resource)) fail(resourcePath, 'a plain object');
 
     for (const [methodName, definition] of Object.entries(resource)) {
-      assertSafeKey(
-        methodName,
-        `config.resources.${resourceName}.${methodName}`,
-      );
-      assertResourceDefinition(
-        definition,
-        `config.resources.${resourceName}.${methodName}`,
-      );
+      const methodPath = `${resourcePath}.${methodName}`;
+      assertSafeKey(methodName, methodPath);
+      assertResourceDefinition(definition, methodPath);
     }
   }
 }
@@ -101,8 +95,9 @@ function assertCrudsConfig(cruds: unknown): void {
   }
 
   for (const [crudName, crud] of Object.entries(cruds)) {
-    assertSafeKey(crudName, `config.cruds.${crudName}`);
-    assertCrudDefinition(crud, `config.cruds.${crudName}`);
+    const crudPath = `config.cruds.${crudName}`;
+    assertSafeKey(crudName, crudPath);
+    assertCrudDefinition(crud, crudPath);
   }
 }
 

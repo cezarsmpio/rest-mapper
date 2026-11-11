@@ -11,7 +11,7 @@ import { resolveUrl } from './url.js';
 function normalizeHeaders(headers: unknown): MapperHeaders {
   if (!headers) return {};
 
-  if (typeof Headers !== 'undefined' && headers instanceof Headers) {
+  if (headers instanceof Headers) {
     return Object.fromEntries(headers.entries());
   }
 
