@@ -27,8 +27,10 @@ afterEach(() => {
 });
 
 describe('createMapper', () => {
-  it('creates an empty mapper without a config', () => {
-    expect(createMapper()).toEqual({});
+  it('requires a transport adapter', () => {
+    expect(() =>
+      createMapper({ resources: {} } as unknown as MapperConfig),
+    ).toThrow('config.adapter must be a transport constructor');
   });
 
   it('creates all CRUD methods with the expected URLs and methods', async () => {
@@ -406,18 +408,27 @@ describe('createMapper', () => {
       'config.cruds.User.defaults must be a plain object',
     ],
   ])('rejects %s', (_name, config, message) => {
-    expect(() => createMapper(config as MapperConfig)).toThrow(message);
+    const configWithAdapter =
+      config !== null && typeof config === 'object' && !Array.isArray(config)
+        ? { adapter: FetchTransport, ...config }
+        : config;
+
+    expect(() => createMapper(configWithAdapter as MapperConfig)).toThrow(
+      message,
+    );
   });
 
   it('rejects prototype-polluting resource and CRUD names', () => {
     expect(() =>
       createMapper({
+        adapter: FetchTransport,
         resources: objectWithKey('__proto__', {}) as never,
       }),
     ).toThrow('config.resources.__proto__ must be a safe property name');
 
     expect(() =>
       createMapper({
+        adapter: FetchTransport,
         resources: {
           User: objectWithKey('constructor', { url: '/' }) as never,
         },
@@ -428,6 +439,7 @@ describe('createMapper', () => {
 
     expect(() =>
       createMapper({
+        adapter: FetchTransport,
         cruds: objectWithKey('prototype', { baseURL: '/' }) as never,
       }),
     ).toThrow('config.cruds.prototype must be a safe property name');

@@ -70,28 +70,6 @@ describe('axios transport', () => {
     expect(response).toBe(axiosResponse);
   });
 
-  it('uses axios by default through createMapper', async () => {
-    const api = createMapper({
-      host: 'https://api.example.com',
-      resources: {
-        User: { get: { url: '/users/{id}' } },
-      },
-    });
-
-    await api.User.get({ params: { id: 5, page: 2 } });
-
-    expect(axiosMock.create).toHaveBeenCalledWith({
-      baseURL: 'https://api.example.com',
-    });
-    expect(axiosMock.request).toHaveBeenCalledWith(
-      expect.objectContaining({
-        url: '/users/5',
-        method: 'get',
-        params: { page: 2 },
-      }),
-    );
-  });
-
   it('createAxiosMapper presets the axios adapter', async () => {
     const api = createAxiosMapper({
       host: 'https://api.example.com',

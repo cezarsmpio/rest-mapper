@@ -1,7 +1,7 @@
 {
   "name": "rest-mapper",
   "version": "2.0.0",
-  "description": "A typed, isomorphic REST mapper for browsers and Node.js with axios and fetch transports.",
+  "description": "A typed, isomorphic REST mapper for browsers and Node.js with axios, fetch, and undici transports.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -49,7 +49,8 @@
     "client",
     "ajax",
     "axios",
-    "fetch"
+    "fetch",
+    "undici"
   ],
   "author": "Cezar Sampaio <cezarsmpio@gmail.com> (https://github.com/cezarsmpio)",
   "license": "MIT",
@@ -61,10 +62,14 @@
     "node": ">=18"
   },
   "peerDependencies": {
-    "axios": ">=1.0.0 <2.0.0"
+    "axios": ">=1.0.0 <2.0.0",
+    "undici": ">=6.0.0 <9.0.0"
   },
   "peerDependenciesMeta": {
     "axios": {
+      "optional": true
+    },
+    "undici": {
       "optional": true
     }
   },
@@ -80,6 +85,7 @@
     "publint": "0.3.25",
     "tsdown": "0.23.7",
     "typescript": "7.0.2",
+    "undici": "8.12.4",
     "vite": "8.3.7",
     "vitest": "5.1.0"
   }

@@ -115,7 +115,7 @@ export function assertMapperConfig(
     fail('config.host', 'a string');
   }
 
-  if (config.adapter !== undefined && typeof config.adapter !== 'function') {
+  if (typeof config.adapter !== 'function') {
     fail('config.adapter', 'a transport constructor');
   }
 

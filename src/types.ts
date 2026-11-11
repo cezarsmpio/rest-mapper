@@ -64,6 +64,7 @@ export interface RequestOptionsBase {
   maxBodyLength?: number;
   timeoutErrorMessage?: string;
   responseEncoding?: string;
+  dispatcher?: unknown;
   xsrfCookieName?: string;
   xsrfHeaderName?: string;
   socketPath?: string;
@@ -158,7 +159,7 @@ export interface MapperConfig {
   cruds?: CrudsConfig;
   defaults?: RequestOptions;
   intercept?: Interceptors | false;
-  adapter?: TransportAdapter;
+  adapter: TransportAdapter;
 }
 
 type ResourceConfigOf<C extends MapperConfig> = NonNullable<C['resources']>;

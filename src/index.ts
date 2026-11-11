@@ -2,9 +2,14 @@ export { RestMapperError } from './errors.js';
 export {
   createAxiosMapper,
   createFetchMapper,
+  createUndiciMapper,
 } from './factories.js';
 export { createMapper } from './mapper.js';
-export { AxiosTransport, FetchTransport } from './transports/index.js';
+export {
+  AxiosTransport,
+  FetchTransport,
+  UndiciTransport,
+} from './transports/index.js';
 export type {
   BasicAuthCredentials,
   CrudDefinition,

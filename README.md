@@ -3,32 +3,33 @@
 A typed, isomorphic REST mapper for Node.js and browsers. Define your API once and call typed methods without repeating URLs, verbs, or request plumbing.
 
 - **TypeScript-first** with inferred resource and CRUD methods.
-- **axios by default**, with an opt-in native **fetch** transport.
-- **One request shape** for both transports.
+- **axios, fetch, and undici transports** with an explicit transport adapter.
+- **One request shape** for every transport.
 - **Path and query parameters** through a single `params` object.
 - **Interceptors**, global defaults, and CRUD generation.
-- **Dual ESM/CJS** builds and an optional axios peer dependency.
+- **Dual ESM/CJS** builds and optional axios/undici peer dependencies.
 
 ## Install
 
-The default adapter uses axios, so install it alongside the library:
+Install the peer dependency for the transport you plan to use:
 
 ```bash
+# axios transport
 npm install rest-mapper axios
-```
 
-Using only the fetch adapter? Axios is an optional peer and can be skipped:
+# undici transport
+npm install rest-mapper undici
 
-```bash
+# fetch-only transport needs no extra dependency
 npm install rest-mapper
 ```
 
 ## Quick start
 
 ```ts
-import { createMapper } from 'rest-mapper';
+import { createAxiosMapper } from 'rest-mapper';
 
-const api = createMapper({
+const api = createAxiosMapper({
   host: 'https://api.example.com/v1',
   resources: {
     Auth: {
@@ -51,7 +52,7 @@ const products = await api.Products.all({ query: { page: 2 } });
 CommonJS:
 
 ```js
-const { createMapper } = require('rest-mapper');
+const { createAxiosMapper } = require('rest-mapper');
 ```
 
 ## Configuration
@@ -59,7 +60,7 @@ const { createMapper } = require('rest-mapper');
 ```ts
 interface MapperConfig {
   host?: string;
-  adapter?: TransportAdapter; // default: AxiosTransport
+  adapter: TransportAdapter;
   defaults?: RequestOptions;
   resources?: Record<string, Record<string, ResourceDefinition>>;
   cruds?: Record<string, CrudDefinition>;
@@ -72,7 +73,7 @@ interface MapperConfig {
 Each resource method describes one endpoint:
 
 ```ts
-const api = createMapper({
+const api = createAxiosMapper({
   host: 'https://api.example.com',
   resources: {
     Products: {
@@ -96,7 +97,7 @@ A CRUD group generates five methods from a `baseURL`:
 | `delete` | `DELETE /products/{id}` |
 
 ```ts
-const api = createMapper({
+const api = createAxiosMapper({
   host: 'https://api.example.com',
   cruds: {
     Products: {
@@ -152,7 +153,7 @@ await api.Products.create({
 `defaults` apply to every request. Resource definitions and individual calls override them.
 
 ```ts
-const api = createMapper({
+const api = createAxiosMapper({
   host: 'https://api.example.com',
   defaults: {
     method: 'get',
@@ -170,7 +171,7 @@ const api = createMapper({
 
 ## Transport adapters
 
-`adapter` accepts a transport constructor. `AxiosTransport` is the default; pass `FetchTransport` to use the platform `fetch`.
+`adapter` is required and accepts a transport constructor. The built-in transports are `AxiosTransport`, `FetchTransport`, and `UndiciTransport`.
 
 ```ts
 import { createMapper, FetchTransport } from 'rest-mapper';
@@ -185,6 +186,22 @@ const response = await api.Products.all();
 console.log(response.status, response.data);
 ```
 
+### Undici transport
+
+`UndiciTransport` uses undici's `fetch` implementation and supports a custom `dispatcher`, which is useful for connection pooling, proxies, and custom agents:
+
+```ts
+import { createUndiciMapper } from 'rest-mapper';
+import { ProxyAgent } from 'undici';
+
+const api = createUndiciMapper({
+  host: 'https://api.example.com',
+  defaults: {
+    dispatcher: new ProxyAgent('http://proxy.example.com:8080'),
+  },
+});
+```
+
 The response keeps the axios-compatible shape: `{ data, status, statusText, headers, config, request }`.
 
 ### Adapter presets
@@ -195,6 +212,7 @@ The preset factories encapsulate the transport choice:
 import {
   createAxiosMapper,
   createFetchMapper,
+  createUndiciMapper,
 } from 'rest-mapper';
 
 const axiosApi = createAxiosMapper({
@@ -206,9 +224,14 @@ const fetchApi = createFetchMapper({
   host: 'https://api.example.com',
   cruds: { Products: { baseURL: '/products' } },
 });
+
+const undiciApi = createUndiciMapper({
+  host: 'https://api.example.com',
+  cruds: { Products: { baseURL: '/products' } },
+});
 ```
 
-`createAxiosMapper` is equivalent to `createMapper` with `AxiosTransport`. `createFetchMapper` is equivalent to `createMapper` with `FetchTransport`.
+Each preset is equivalent to calling `createMapper` with the matching transport constructor.
 
 ### Custom transports
 
@@ -226,7 +249,7 @@ class MyTransport implements Transport {
   constructor(private readonly host: string) {}
 
   async request(config: ResolvedRequestConfig): Promise<MapperResponse> {
-    // Implement the request and return the standard response shape.
+    throw new Error('Implement the request and return the standard response shape.');
   }
 }
 
@@ -239,14 +262,14 @@ const api = createMapper({
 });
 ```
 
-The fetch transport supports JSON, text, `arraybuffer`, `blob`, and `stream` response types, timeouts, caller-provided `AbortSignal`s, `validateStatus`, basic auth, credentials, and standard fetch request options. HTTP failures reject with a `RestMapperError` that exposes both `error.status` and `error.response`.
+The fetch and undici transports support JSON, text, `arraybuffer`, `blob`, and `stream` response types, timeouts, caller-provided `AbortSignal`s, `validateStatus`, basic auth, credentials, and standard request options. HTTP failures reject with a `RestMapperError` that exposes both `error.status` and `error.response`.
 
 The axios transport is unchanged: axios responses and axios errors pass through as before.
 
 ## Interceptors
 
 ```ts
-const api = createMapper({
+const api = createAxiosMapper({
   host: 'https://api.example.com',
   intercept: {
     request: {
@@ -289,11 +312,12 @@ Public types include `MapperConfig`, `Mapper`, `MapperResponse`, `Transport`, `T
 
 ## Migrating from 1.x
 
-- Replace `new Mapper(config)` with `createMapper(config)`.
+- Replace `new Mapper(config)` with `createMapper(config)` and provide an `adapter`.
+- Use `createAxiosMapper`, `createFetchMapper`, or `createUndiciMapper` when you want a preset.
 - Replace `supplant: { id: 1 }` with `params: { id: 1 }`.
-- If you use the default axios adapter, install axios as a peer dependency.
-- Replace `adapter: 'fetch'` with `adapter: FetchTransport`, or use `createFetchMapper`.
-- `adapter: 'axios'` is no longer needed; axios is the default. Use `createAxiosMapper` for an explicit preset.
+- Install axios for `AxiosTransport` or undici for `UndiciTransport`; `FetchTransport` needs neither.
+- Replace `adapter: 'fetch'` with `adapter: FetchTransport`.
+- Replace `adapter: 'axios'` with `adapter: AxiosTransport`.
 - The package is now ESM-first with a CommonJS build. Both named and default exports are available.
 
 ## Development

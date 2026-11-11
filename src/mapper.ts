@@ -17,7 +17,7 @@ import type {
   RequestOptions,
   ResourceDefinition,
 } from './types.js';
-import { AxiosTransport, createTransport } from './transports/index.js';
+import { createTransport } from './transports/index.js';
 
 type RequestFactory = (resource: ResourceDefinition) => MapperRequest;
 
@@ -112,22 +112,18 @@ function buildMapper(
   return mapper;
 }
 
-export function createMapper<C extends MapperConfig = MapperConfig>(
-  config?: C,
+export function createMapper<C extends MapperConfig>(
+  config: C,
 ): Mapper<C> {
-  const resolvedConfig = config === undefined ? ({} as C) : config;
-  assertMapperConfig(resolvedConfig);
+  assertMapperConfig(config);
 
   const defaults = deepMerge<RequestOptions>(
     { method: 'get' },
-    resolvedConfig.defaults,
+    config.defaults,
   );
-  const interceptors = resolvedConfig.intercept ?? undefined;
-  const transport = createTransport(
-    resolvedConfig.adapter ?? AxiosTransport,
-    resolvedConfig.host ?? '',
-  );
+  const interceptors = config.intercept ?? undefined;
+  const transport = createTransport(config.adapter, config.host ?? '');
   const factory = createRequestFactory(defaults, interceptors, transport);
 
-  return buildMapper(resolvedConfig, factory) as Mapper<C>;
+  return buildMapper(config, factory) as Mapper<C>;
 }

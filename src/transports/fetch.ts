@@ -17,9 +17,13 @@ interface AbortBundle {
   cleanup: () => void;
 }
 
+type FetchRequestInit = RequestInit & {
+  dispatcher?: unknown;
+};
+
 interface PreparedFetchRequest {
   url: string;
-  init: RequestInit;
+  init: FetchRequestInit;
   abort: AbortBundle;
 }
 
@@ -241,7 +245,7 @@ function prepareFetchRequest(
     config.credentials ??
     (config.withCredentials === true ? 'include' : undefined);
 
-  const init: RequestInit = {
+  const init: FetchRequestInit = {
     method: config.method.toUpperCase(),
     headers,
     ...(body === undefined ? {} : { body }),
@@ -250,6 +254,9 @@ function prepareFetchRequest(
     ...(config.mode === undefined ? {} : { mode: config.mode }),
     ...(config.cache === undefined ? {} : { cache: config.cache }),
     ...(config.redirect === undefined ? {} : { redirect: config.redirect }),
+    ...(config.dispatcher === undefined
+      ? {}
+      : { dispatcher: config.dispatcher }),
   };
 
   return {
@@ -266,7 +273,9 @@ export class FetchTransport implements Transport {
     this.#host = host;
   }
 
-  async request(config: ResolvedRequestConfig): Promise<MapperResponse> {
+  protected async getFetchImplementation(
+    config: ResolvedRequestConfig,
+  ): Promise<typeof fetch> {
     const fetchImplementation = globalThis.fetch;
 
     if (typeof fetchImplementation !== 'function') {
@@ -276,6 +285,11 @@ export class FetchTransport implements Transport {
       );
     }
 
+    return fetchImplementation;
+  }
+
+  async request(config: ResolvedRequestConfig): Promise<MapperResponse> {
+    const fetchImplementation = await this.getFetchImplementation(config);
     const prepared = prepareFetchRequest(this.#host, config);
 
     try {

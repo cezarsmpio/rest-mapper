@@ -7,8 +7,8 @@ All notable changes to this project are documented here. Releases are generated 
 ### Added
 
 - `createMapper` factory API with inferred resource and CRUD method types.
-- Native `fetch` transport alongside the default axios transport, selected with transport constructors.
-- `createAxiosMapper` and `createFetchMapper` presets, plus exported `AxiosTransport` and `FetchTransport` adapters.
+- Native `fetch` and `undici` transports selected with required transport constructors.
+- `createAxiosMapper`, `createFetchMapper`, and `createUndiciMapper` presets, plus exported `AxiosTransport`, `FetchTransport`, and `UndiciTransport` adapters.
 - Full TypeScript source, declarations, ESM/CJS builds, and strict public types.
 - Vitest test suite with 100% statement, branch, function, and line coverage.
 - Semantic-release automation, CI, npm lockfile, and security documentation.
@@ -16,7 +16,8 @@ All notable changes to this project are documented here. Releases are generated 
 ### Changed
 
 - `supplant` is replaced by `params`; unmatched params are sent as query parameters, and `query` provides explicit query values.
-- axios is now an optional peer dependency and is loaded lazily.
+- axios and undici are optional peer dependencies and are loaded lazily.
+- A transport adapter is required; there is no implicit axios fallback.
 - Dependencies, GitHub Actions, and package metadata are locked to current versions.
 - Default branch is `main`.
 - Author metadata is now Cezar Sampaio.

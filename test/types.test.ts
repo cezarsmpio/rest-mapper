@@ -3,6 +3,7 @@ import {
   createAxiosMapper,
   createFetchMapper,
   createMapper,
+  createUndiciMapper,
   FetchTransport,
   type MapperRequest,
   type MapperResponse,
@@ -15,6 +16,7 @@ interface Product {
 
 it('infers resource and CRUD methods from config', () => {
   const api = createMapper({
+    adapter: FetchTransport,
     resources: {
       User: {
         get: { url: '/users/{id}' },
@@ -53,6 +55,11 @@ it('types the preset factories and transport adapters', () => {
     },
   });
 
+  const undiciApi = createUndiciMapper({
+    resources: {
+      Health: { get: { url: '/health' } },
+    },
+  });
   const explicitApi = createMapper({
     adapter: FetchTransport,
     resources: {
@@ -62,8 +69,6 @@ it('types the preset factories and transport adapters', () => {
 
   expectTypeOf<typeof fetchApi.Health.get>().toEqualTypeOf<MapperRequest>();
   expectTypeOf<typeof axiosApi.Health.all>().toEqualTypeOf<MapperRequest>();
+  expectTypeOf<typeof undiciApi.Health.get>().toEqualTypeOf<MapperRequest>();
   expectTypeOf<typeof explicitApi.Health.get>().toEqualTypeOf<MapperRequest>();
-
-  // @ts-expect-error Preset factories choose the adapter themselves.
-  createFetchMapper({ adapter: FetchTransport });
 });

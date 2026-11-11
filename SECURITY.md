@@ -26,4 +26,4 @@ You can expect an initial response within 7 days. Confirmed vulnerabilities will
 
 ## Dependency security
 
-Runtime dependencies are audited with `npm audit` in CI. axios is an optional peer dependency and receives security updates through the consumer's chosen axios version. Prototype-pollution keys are rejected by the configuration and merge layers.
+Runtime dependencies are audited with `npm audit` in CI. axios and undici are optional peer dependencies and receive security updates through the consumer's chosen versions. Prototype-pollution keys are rejected by the configuration and merge layers.
