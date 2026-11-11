@@ -1,0 +1,27 @@
+# Baseline — 2026-11-11
+
+Command:
+
+```bash
+node --experimental-bench --bench --bench-samples=50 --bench-warmup=20 'benchmarks/*.bench.mjs'
+```
+
+Environment: Node 26.13.0. The baseline was measured from commit `3459b05`
+using the same benchmark files and build settings as the optimized run.
+
+Results before performance optimization:
+
+```text
+benchmark | samples | mean rate | 95% CI | median rate | warning
+resources + CRUD | 50 | 231.51k ops/s | [222.26k ops/s, 240.76k ops/s] | 238.37k ops/s | noisy
+path params | 50 | 127.49k ops/s | [118.00k ops/s, 136.98k ops/s] | 133.04k ops/s | noisy
+path params + query | 50 | 102.74k ops/s | [96.42k ops/s, 109.05k ops/s] | 98.99k ops/s | noisy
+nested query merge | 50 | 113.03k ops/s | [107.21k ops/s, 118.85k ops/s] | 109.71k ops/s | noisy
+CRUD get | 50 | 118.25k ops/s | [110.55k ops/s, 125.96k ops/s] | 117.92k ops/s | noisy
+request + response | 50 | 113.17k ops/s | [106.99k ops/s, 119.36k ops/s] | 111.93k ops/s | noisy
+JSON response | 50 | 209.52k ops/s | [193.27k ops/s, 225.77k ops/s] | 212.56k ops/s | noisy
+mapper path + query | 50 | 73.78k ops/s | [69.57k ops/s, 77.98k ops/s] | 71.03k ops/s | noisy
+```
+
+The suite measures in-process library work only. Network latency and server
+behavior are excluded.
