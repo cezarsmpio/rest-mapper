@@ -41,9 +41,9 @@ export type ResponseType =
   | 'document';
 
 export interface RequestOptionsBase {
-  /** Placeholder values are consumed from the URL; remaining keys become query parameters. */
+  /** Values used to replace `{placeholders}` in the URL path. */
   params?: Params;
-  /** Explicit query parameters. Takes precedence over unconsumed `params` keys. */
+  /** Values serialized into the URL query string. */
   query?: Params;
   method?: string;
   url?: string;

@@ -6,7 +6,7 @@ import type {
   ResolvedRequestConfig,
   ResourceDefinition,
 } from './types.js';
-import { resolveUrl } from './url.js';
+import { interpolatePath } from './url.js';
 
 function normalizeHeaders(headers: unknown): MapperHeaders {
   if (!headers) return {};
@@ -66,11 +66,11 @@ export function resolveRequest(
   assertParams(merged.params, 'params');
   assertParams(merged.query, 'query');
 
-  const { url, params } = resolveUrl(
+  const url = interpolatePath(
     resource.url,
     (merged.params ?? {}) as Params,
-    (merged.query ?? {}) as Params,
   );
+  const params = (merged.query ?? {}) as Params;
 
   const method =
     typeof merged.method === 'string' ? merged.method.toLowerCase() : 'get';

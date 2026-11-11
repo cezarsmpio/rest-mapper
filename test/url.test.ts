@@ -3,8 +3,8 @@ import {
   buildQueryString,
   buildRequestUrl,
   combineUrls,
+  interpolatePath,
   isAbsoluteUrl,
-  resolveUrl,
 } from '../src/url.js';
 
 describe('URL utilities', () => {
@@ -25,40 +25,33 @@ describe('URL utilities', () => {
     );
   });
 
-  it('interpolates scalar parameters and removes them from the query', () => {
-    const result = resolveUrl(
-      '/users/{id}/posts/{published}',
-      { id: 42, published: true, page: 2 },
-      { sort: 'name' },
-    );
-
-    expect(result).toEqual({
-      url: '/users/42/posts/true',
-      params: { page: 2, sort: 'name' },
+  it('interpolates scalar params and ignores unmatched keys', () => {
+    const url = interpolatePath('/users/{id}/posts/{published}', {
+      id: 42,
+      published: true,
+      page: 2,
     });
+
+    expect(url).toBe('/users/42/posts/true');
   });
 
   it('encodes path parameters', () => {
-    const result = resolveUrl('/files/{name}', { name: 'a/b c' });
-
-    expect(result.url).toBe('/files/a%2Fb%20c');
-    expect(result.params).toEqual({});
+    expect(interpolatePath('/files/{name}', { name: 'a/b c' })).toBe(
+      '/files/a%2Fb%20c',
+    );
   });
 
   it('leaves missing, null, and non-scalar placeholders untouched', () => {
-    const result = resolveUrl('/users/{id}/{other}/{missing}', {
+    const url = interpolatePath('/users/{id}/{other}/{missing}', {
       id: { nested: true },
       other: null,
     });
 
-    expect(result.url).toBe('/users/{id}/{other}/{missing}');
-    expect(result.params).toEqual({ id: { nested: true }, other: null });
+    expect(url).toBe('/users/{id}/{other}/{missing}');
   });
 
-  it('lets explicit query values win over unconsumed params', () => {
-    const result = resolveUrl('/users/{id}', { id: 1, page: 2 }, { page: 3 });
-
-    expect(result).toEqual({ url: '/users/1', params: { page: 3 } });
+  it('supports string interpolation', () => {
+    expect(interpolatePath('/users/{id}', { id: 'abc' })).toBe('/users/abc');
   });
 
   it('builds query strings for all supported value types', () => {

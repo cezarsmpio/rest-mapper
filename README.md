@@ -114,24 +114,24 @@ await api.Products.get({ params: { id: 10 } });
 
 ### Path and query parameters
 
-`params` replaces the old `supplant` API. Scalar keys that match `{placeholders}` are interpolated into the path and URL-encoded. Remaining keys become query parameters.
+`params` replaces the old `supplant` API and is used only for `{placeholders}` in the URL path. `query` is used only for query parameters. Keys in `params` that do not match a placeholder are ignored.
 
 ```ts
 await api.Products.byDate({
   params: {
     startDate: '2026-01-01',
     endDate: '2026-01-31',
+  },
+  query: {
     status: 'active',
   },
 });
 // GET /products/date/2026-01-01/2026-01-31?status=active
 ```
 
-Use `query` when you want to be explicit about query parameters:
-
 ```ts
 await api.Products.list({
-  params: { id: 10 }, // consumed by the path
+  params: { id: 10 },
   query: { page: 2, sort: 'name' },
 });
 ```

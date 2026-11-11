@@ -44,7 +44,7 @@ describe('createMapper', () => {
     });
 
     await api.Users.all();
-    await api.Users.get({ params: { id: 1, page: 2 } });
+    await api.Users.get({ params: { id: 1 }, query: { page: 2 } });
     await api.Users.create({ data: { name: 'Ada' } });
     await api.Users.update({ params: { id: 1 }, data: { name: 'Grace' } });
     await api.Users.delete({ params: { id: 1 } });
@@ -111,13 +111,14 @@ describe('createMapper', () => {
     });
 
     await api.User.save({
-      params: { id: 3, page: 2 },
+      params: { id: 3 },
+      query: { page: 2 },
       headers: { 'x-call': 'yes' },
       timeout: 2_000,
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://api.example.com/users/3?page=2&category=all',
+      'https://api.example.com/users/3?category=all&page=2',
       expect.objectContaining({
         method: 'POST',
         headers: {

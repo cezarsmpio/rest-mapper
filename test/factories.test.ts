@@ -38,7 +38,8 @@ describe('mapper factories', () => {
     });
 
     const response = await api.Health.get({
-      params: { id: 7, page: 2 },
+      params: { id: 7 },
+      query: { page: 2 },
     });
 
     expect(response.data).toEqual({

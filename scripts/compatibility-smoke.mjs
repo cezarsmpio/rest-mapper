@@ -16,7 +16,7 @@ const config = {
 };
 
 const esmResponse = await createFetchMapper(config).Health.get({
-  params: { page: 2 },
+  query: { page: 2 },
 });
 assert.equal(esmResponse.status, 200);
 assert.deepEqual(esmResponse.data, {

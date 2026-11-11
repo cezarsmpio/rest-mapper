@@ -8,7 +8,7 @@ describe('request resolution', () => {
       method: 'get',
       timeout: 1_000,
       headers: { accept: 'application/json', 'x-default': 'one' },
-      params: { page: 1 },
+      query: { page: 1 },
     };
     const resource: ResourceDefinition = {
       url: '/users/{id}',
@@ -19,7 +19,7 @@ describe('request resolution', () => {
       method: 'POST',
       timeout: 2_000,
       headers: { 'x-default': 'two' },
-      params: { sort: 'name' },
+      query: { sort: 'name' },
       data: { name: 'Ada' },
     };
 
@@ -98,22 +98,39 @@ describe('request resolution', () => {
     expect(result.params).toEqual({ page: 2 });
   });
 
+  it('does not promote unmatched params to the query string', () => {
+    const result = resolveRequest(
+      { url: '/users/{id}', params: { id: 1, ignored: 2 } },
+      { query: { page: 3 } },
+      {},
+    );
+
+    expect(result.url).toBe('/users/1');
+    expect(result.params).toEqual({ page: 3 });
+  });
+
   it('does not mutate the defaults, resource, or call options', () => {
     const defaults: RequestOptions = { headers: { accept: 'json' } };
     const resource: ResourceDefinition = {
       url: '/users/{id}',
-      params: { id: 1, page: 2 },
+      params: { id: 1 },
     };
-    const call: RequestOptions = { headers: { authorization: 'token' } };
+    const call: RequestOptions = {
+      headers: { authorization: 'token' },
+      query: { page: 2 },
+    };
 
     resolveRequest(resource, call, defaults);
 
     expect(defaults).toEqual({ headers: { accept: 'json' } });
     expect(resource).toEqual({
       url: '/users/{id}',
-      params: { id: 1, page: 2 },
+      params: { id: 1 },
     });
-    expect(call).toEqual({ headers: { authorization: 'token' } });
+    expect(call).toEqual({
+      headers: { authorization: 'token' },
+      query: { page: 2 },
+    });
   });
 
   it('rejects the removed supplant option with a migration message', () => {

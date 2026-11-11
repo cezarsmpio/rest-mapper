@@ -22,41 +22,20 @@ function isInterpolatable(
   );
 }
 
-export interface ResolvedUrl {
-  url: string;
-  params: Params;
-}
-
 /**
  * Interpolates `{name}` placeholders using scalar values from `params`.
- * Unmatched keys remain available as query parameters. An explicit `query`
- * object is merged last and wins on duplicate keys.
+ * Keys that do not match a placeholder are ignored.
  */
-export function resolveUrl(
+export function interpolatePath(
   template: string,
   params: Params = {},
-  query: Params = {},
-): ResolvedUrl {
-  const consumed = new Set<string>();
-
-  const url = template.replace(/{([^{}]+)}/g, (placeholder, key: string) => {
+): string {
+  return template.replace(/{([^{}]+)}/g, (placeholder, key: string) => {
     const value = params[key];
-
-    if (!isInterpolatable(value)) return placeholder;
-
-    consumed.add(key);
-    return encodeURIComponent(String(value));
+    return isInterpolatable(value)
+      ? encodeURIComponent(String(value))
+      : placeholder;
   });
-
-  const remaining: Record<string, ParamValue> = {};
-  for (const [key, value] of Object.entries(params)) {
-    if (!consumed.has(key)) remaining[key] = value;
-  }
-
-  return {
-    url,
-    params: { ...remaining, ...query },
-  };
 }
 
 function appendQueryValue(

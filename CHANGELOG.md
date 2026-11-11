@@ -15,12 +15,12 @@ All notable changes to this project are documented here. Releases are generated 
 
 ### Changed
 
-- `supplant` is replaced by `params`; unmatched params are sent as query parameters, and `query` provides explicit query values.
+- `supplant` is replaced by `params` for URL path placeholders; `query` is the only source of query-string parameters.
 - axios and undici are optional peer dependencies and are loaded lazily.
 - A transport adapter is required; there is no implicit axios fallback.
 - Dependencies, GitHub Actions, and package metadata are locked to current versions.
 - Node 26 is the default development runtime; CI covers Node 18, 20, 22, 24, and 26.
-- Production bundles are minified; source maps and the duplicate CJS declaration body are no longer published.
+- Production bundles are not minified; minification is left to consumers. Source maps and the duplicate CJS declaration body are no longer published.
 - Default branch is `main`.
 - Author metadata is now Cezar Sampaio.
 
