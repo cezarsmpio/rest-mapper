@@ -29,8 +29,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:compat": "node scripts/compatibility-smoke.mjs",
     "lint:pack": "publint && attw --pack .",
-    "verify": "npm run typecheck && npm run test:coverage && npm run build && npm run lint:pack",
+    "verify": "npm run typecheck && npm run test:coverage && npm run build && npm run lint:pack && npm run test:compat",
     "prepublishOnly": "npm run build"
   },
   "repository": {
@@ -84,7 +85,7 @@
     "tsdown": "0.23.7",
     "typescript": "7.0.2",
     "undici": "8.12.4",
-    "vite": "8.3.7",
+    "vite": "8.3.8",
     "vitest": "5.1.0"
   }
 }

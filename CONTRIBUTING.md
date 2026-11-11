@@ -2,7 +2,7 @@
 
 ## Setup
 
-Requires Node.js 22.18+ or 24.11+ for the development toolchain.
+Node.js 26 is the default development runtime (`.nvmrc`). The development toolchain requires Node.js 22.18+, 24.11+, or 26; runtime compatibility is tested on Node 18, 20, 22, 24, and 26.
 
 ```bash
 npm ci
