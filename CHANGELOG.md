@@ -1,5 +1,17 @@
 # Changelog
 
+# [2.0.0](https://github.com/cezarsmpio/rest-mapper/compare/v1.5.0...v2.0.0) (2026-11-11)
+
+
+### Features
+
+* finalize rest-mapper 2.0 ([d724c9e](https://github.com/cezarsmpio/rest-mapper/commit/d724c9e1ed35e563b953e7585a5820b16dcd90f5))
+
+
+### BREAKING CHANGES
+
+* v2 replaces new Mapper with createMapper, requires transport constructor adapters, and splits path params from query parameters.
+
 # [1.5.0](https://github.com/cezarsmpio/rest-mapper/compare/v1.4.7...v1.5.0) (2026-11-11)
 
 

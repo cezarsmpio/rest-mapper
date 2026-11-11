@@ -1,6 +1,6 @@
 {
   "name": "rest-mapper",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "description": "A typed, isomorphic REST mapper for browsers and Node.js with axios, fetch, and undici transports.",
   "type": "module",
   "main": "./dist/index.cjs",
