@@ -59,7 +59,7 @@ const { createMapper } = require('rest-mapper');
 ```ts
 interface MapperConfig {
   host?: string;
-  adapter?: 'axios' | 'fetch'; // default: 'axios'
+  adapter?: TransportAdapter; // default: AxiosTransport
   defaults?: RequestOptions;
   resources?: Record<string, Record<string, ResourceDefinition>>;
   cruds?: Record<string, CrudDefinition>;
@@ -168,13 +168,15 @@ const api = createMapper({
 });
 ```
 
-## Fetch transport
+## Transport adapters
 
-Set `adapter: 'fetch'` to use the platform `fetch`. The response keeps the axios-compatible shape: `{ data, status, statusText, headers, config, request }`.
+`adapter` accepts a transport constructor. `AxiosTransport` is the default; pass `FetchTransport` to use the platform `fetch`.
 
 ```ts
+import { createMapper, FetchTransport } from 'rest-mapper';
+
 const api = createMapper({
-  adapter: 'fetch',
+  adapter: FetchTransport,
   host: 'https://api.example.com',
   cruds: { Products: { baseURL: '/products' } },
 });
@@ -183,9 +185,63 @@ const response = await api.Products.all();
 console.log(response.status, response.data);
 ```
 
+The response keeps the axios-compatible shape: `{ data, status, statusText, headers, config, request }`.
+
+### Adapter presets
+
+The preset factories encapsulate the transport choice:
+
+```ts
+import {
+  createAxiosMapper,
+  createFetchMapper,
+} from 'rest-mapper';
+
+const axiosApi = createAxiosMapper({
+  host: 'https://api.example.com',
+  cruds: { Products: { baseURL: '/products' } },
+});
+
+const fetchApi = createFetchMapper({
+  host: 'https://api.example.com',
+  cruds: { Products: { baseURL: '/products' } },
+});
+```
+
+`createAxiosMapper` is equivalent to `createMapper` with `AxiosTransport`. `createFetchMapper` is equivalent to `createMapper` with `FetchTransport`.
+
+### Custom transports
+
+A custom adapter is any class with a `request(config)` method and a `(host)` constructor:
+
+```ts
+import {
+  createMapper,
+  type MapperResponse,
+  type ResolvedRequestConfig,
+  type Transport,
+} from 'rest-mapper';
+
+class MyTransport implements Transport {
+  constructor(private readonly host: string) {}
+
+  async request(config: ResolvedRequestConfig): Promise<MapperResponse> {
+    // Implement the request and return the standard response shape.
+  }
+}
+
+const api = createMapper({
+  adapter: MyTransport,
+  host: 'https://api.example.com',
+  resources: {
+    Health: { get: { url: '/health' } },
+  },
+});
+```
+
 The fetch transport supports JSON, text, `arraybuffer`, `blob`, and `stream` response types, timeouts, caller-provided `AbortSignal`s, `validateStatus`, basic auth, credentials, and standard fetch request options. HTTP failures reject with a `RestMapperError` that exposes both `error.status` and `error.response`.
 
-The axios adapter is unchanged: axios responses and axios errors pass through as before.
+The axios transport is unchanged: axios responses and axios errors pass through as before.
 
 ## Interceptors
 
@@ -229,14 +285,15 @@ const response = await api.Products.get<Product>({ params: { id: 1 } });
 console.log(response.data.name); // string
 ```
 
-Public types include `MapperConfig`, `Mapper`, `MapperResponse`, `RequestOptions`, `RestMapperError`, and the individual resource/CRUD mapper types.
+Public types include `MapperConfig`, `Mapper`, `MapperResponse`, `Transport`, `TransportAdapter`, `RequestOptions`, `RestMapperError`, and the individual resource/CRUD mapper types.
 
 ## Migrating from 1.x
 
 - Replace `new Mapper(config)` with `createMapper(config)`.
 - Replace `supplant: { id: 1 }` with `params: { id: 1 }`.
 - If you use the default axios adapter, install axios as a peer dependency.
-- Use `adapter: 'fetch'` to opt into the native fetch transport.
+- Replace `adapter: 'fetch'` with `adapter: FetchTransport`, or use `createFetchMapper`.
+- `adapter: 'axios'` is no longer needed; axios is the default. Use `createAxiosMapper` for an explicit preset.
 - The package is now ESM-first with a CommonJS build. Both named and default exports are available.
 
 ## Development

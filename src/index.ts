@@ -1,7 +1,11 @@
 export { RestMapperError } from './errors.js';
+export {
+  createAxiosMapper,
+  createFetchMapper,
+} from './factories.js';
 export { createMapper } from './mapper.js';
+export { AxiosTransport, FetchTransport } from './transports/index.js';
 export type {
-  Adapter,
   BasicAuthCredentials,
   CrudDefinition,
   CrudMapper,
@@ -10,6 +14,7 @@ export type {
   Interceptors,
   Mapper,
   MapperConfig,
+  MapperConfigWithoutAdapter,
   MapperHeaderValue,
   MapperHeaders,
   MapperHeadersInput,
@@ -27,6 +32,7 @@ export type {
   ResponseInterceptor,
   ResponseType,
   Transport,
+  TransportAdapter,
 } from './types.js';
 
 export { createMapper as default } from './mapper.js';

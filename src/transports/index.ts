@@ -1,9 +1,12 @@
-import type { Adapter, Transport } from '../types.js';
+import type { Transport, TransportAdapter } from '../types.js';
 import { AxiosTransport } from './axios.js';
 import { FetchTransport } from './fetch.js';
 
-export function createTransport(adapter: Adapter, host: string): Transport {
-  return adapter === 'fetch'
-    ? new FetchTransport(host)
-    : new AxiosTransport(host);
+export { AxiosTransport, FetchTransport };
+
+export function createTransport(
+  adapter: TransportAdapter,
+  host: string,
+): Transport {
+  return new adapter(host);
 }

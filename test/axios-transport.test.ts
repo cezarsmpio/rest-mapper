@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ResolvedRequestConfig } from '../src/types.js';
-import { createMapper } from '../src/index.js';
+import {
+  createAxiosMapper,
+  createMapper,
+  FetchTransport,
+} from '../src/index.js';
 import { AxiosTransport } from '../src/transports/axios.js';
 import { createConfig, createResponse } from './helpers.js';
 
@@ -88,12 +92,30 @@ describe('axios transport', () => {
     );
   });
 
+  it('createAxiosMapper presets the axios adapter', async () => {
+    const api = createAxiosMapper({
+      host: 'https://api.example.com',
+      resources: {
+        Health: { get: { url: '/health' } },
+      },
+    });
+
+    await api.Health.get();
+
+    expect(axiosMock.create).toHaveBeenCalledWith({
+      baseURL: 'https://api.example.com',
+    });
+    expect(axiosMock.request).toHaveBeenCalledWith(
+      expect.objectContaining({ url: '/health', method: 'get' }),
+    );
+  });
+
   it('does not load axios when the fetch adapter is selected', async () => {
     const fetchMock = vi.fn(async () => new Response('ok'));
     vi.stubGlobal('fetch', fetchMock);
 
     const api = createMapper({
-      adapter: 'fetch',
+      adapter: FetchTransport,
       host: 'https://api.example.com',
       resources: {
         Health: { get: { url: '/health' } },

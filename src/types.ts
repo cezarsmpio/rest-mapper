@@ -137,7 +137,8 @@ export interface Interceptors {
   response?: ResponseInterceptor;
 }
 
-export type Adapter = 'axios' | 'fetch';
+export type TransportAdapter = new (host: string) => Transport;
+export type MapperConfigWithoutAdapter = Omit<MapperConfig, 'adapter'>;
 
 export type ResourceDefinition = RequestOptions & {
   url: string;
@@ -157,7 +158,7 @@ export interface MapperConfig {
   cruds?: CrudsConfig;
   defaults?: RequestOptions;
   intercept?: Interceptors | false;
-  adapter?: Adapter;
+  adapter?: TransportAdapter;
 }
 
 type ResourceConfigOf<C extends MapperConfig> = NonNullable<C['resources']>;

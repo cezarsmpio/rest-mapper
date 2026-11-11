@@ -115,12 +115,8 @@ export function assertMapperConfig(
     fail('config.host', 'a string');
   }
 
-  if (
-    config.adapter !== undefined &&
-    config.adapter !== 'axios' &&
-    config.adapter !== 'fetch'
-  ) {
-    fail('config.adapter', "'axios' or 'fetch'");
+  if (config.adapter !== undefined && typeof config.adapter !== 'function') {
+    fail('config.adapter', 'a transport constructor');
   }
 
   if (config.intercept !== undefined && config.intercept !== false) {

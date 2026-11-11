@@ -1,6 +1,9 @@
 import { expectTypeOf, it } from 'vitest';
 import {
+  createAxiosMapper,
+  createFetchMapper,
   createMapper,
+  FetchTransport,
   type MapperRequest,
   type MapperResponse,
 } from '../src/index.js';
@@ -36,4 +39,31 @@ it('infers resource and CRUD methods from config', () => {
 
   // @ts-expect-error Unknown resource names are rejected.
   type Missing = typeof api.Missing;
+});
+
+it('types the preset factories and transport adapters', () => {
+  const fetchApi = createFetchMapper({
+    resources: {
+      Health: { get: { url: '/health' } },
+    },
+  });
+  const axiosApi = createAxiosMapper({
+    cruds: {
+      Health: { baseURL: '/health' },
+    },
+  });
+
+  const explicitApi = createMapper({
+    adapter: FetchTransport,
+    resources: {
+      Health: { get: { url: '/health' } },
+    },
+  });
+
+  expectTypeOf<typeof fetchApi.Health.get>().toEqualTypeOf<MapperRequest>();
+  expectTypeOf<typeof axiosApi.Health.all>().toEqualTypeOf<MapperRequest>();
+  expectTypeOf<typeof explicitApi.Health.get>().toEqualTypeOf<MapperRequest>();
+
+  // @ts-expect-error Preset factories choose the adapter themselves.
+  createFetchMapper({ adapter: FetchTransport });
 });

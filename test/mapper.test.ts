@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createMapper,
+  FetchTransport,
   RestMapperError,
   type MapperConfig,
   type RequestOptions,
@@ -33,7 +34,7 @@ describe('createMapper', () => {
   it('creates all CRUD methods with the expected URLs and methods', async () => {
     const fetchMock = stubFetch();
     const api = createMapper({
-      adapter: 'fetch',
+      adapter: FetchTransport,
       host: 'https://api.example.com',
       cruds: {
         Users: { baseURL: '/users' },
@@ -58,7 +59,7 @@ describe('createMapper', () => {
   it('merges CRUD defaults and resource methods that share a name', async () => {
     const fetchMock = stubFetch();
     const api = createMapper({
-      adapter: 'fetch',
+      adapter: FetchTransport,
       host: 'https://api.example.com',
       cruds: {
         Users: {
@@ -89,7 +90,7 @@ describe('createMapper', () => {
   it('applies global defaults and lets calls override them', async () => {
     const fetchMock = stubFetch();
     const api = createMapper({
-      adapter: 'fetch',
+      adapter: FetchTransport,
       host: 'https://api.example.com',
       defaults: {
         method: 'post',
@@ -130,7 +131,7 @@ describe('createMapper', () => {
   it('lets calls override the HTTP method and use absolute URLs', async () => {
     const fetchMock = stubFetch();
     const api = createMapper({
-      adapter: 'fetch',
+      adapter: FetchTransport,
       host: 'https://ignored.example.com',
       resources: {
         Auth: {
@@ -155,7 +156,7 @@ describe('createMapper', () => {
   it('supports method names that shadow object prototype properties', async () => {
     const fetchMock = stubFetch();
     const api = createMapper({
-      adapter: 'fetch',
+      adapter: FetchTransport,
       resources: {
         User: {
           toString: { url: '/users/string' },
@@ -185,7 +186,7 @@ describe('createMapper', () => {
     }));
 
     const api = createMapper({
-      adapter: 'fetch',
+      adapter: FetchTransport,
       resources: { User: { get: { url: '/users' } } },
       intercept: {
         request: { before },
@@ -204,7 +205,7 @@ describe('createMapper', () => {
   it('supports async interceptor replacements', async () => {
     stubFetch();
     const api = createMapper({
-      adapter: 'fetch',
+      adapter: FetchTransport,
       resources: { User: { get: { url: '/users' } } },
       intercept: {
         request: {
@@ -233,7 +234,7 @@ describe('createMapper', () => {
     const error = new Error('before failed');
     const errorHandler = vi.fn();
     const api = createMapper({
-      adapter: 'fetch',
+      adapter: FetchTransport,
       resources: { User: { get: { url: '/users' } } },
       intercept: {
         request: {
@@ -255,7 +256,7 @@ describe('createMapper', () => {
     const error = new Error('success failed');
     const errorHandler = vi.fn();
     const api = createMapper({
-      adapter: 'fetch',
+      adapter: FetchTransport,
       resources: { User: { get: { url: '/users' } } },
       intercept: {
         response: {
@@ -277,7 +278,7 @@ describe('createMapper', () => {
     });
     const errorHandler = vi.fn();
     const api = createMapper({
-      adapter: 'fetch',
+      adapter: FetchTransport,
       resources: { User: { get: { url: '/users' } } },
       intercept: {
         response: { error: errorHandler },
@@ -294,7 +295,7 @@ describe('createMapper', () => {
   it('accepts intercept: false', async () => {
     stubFetch();
     const api = createMapper({
-      adapter: 'fetch',
+      adapter: FetchTransport,
       intercept: false,
       resources: { User: { get: { url: '/users' } } },
     });
@@ -305,7 +306,7 @@ describe('createMapper', () => {
   it('rejects the removed supplant option', async () => {
     stubFetch();
     const api = createMapper({
-      adapter: 'fetch',
+      adapter: FetchTransport,
       resources: { User: { get: { url: '/users/{id}' } } },
     });
 
@@ -317,7 +318,7 @@ describe('createMapper', () => {
   it('validates per-call request options', async () => {
     stubFetch();
     const api = createMapper({
-      adapter: 'fetch',
+      adapter: FetchTransport,
       resources: { User: { get: { url: '/users' } } },
     });
 
@@ -333,7 +334,11 @@ describe('createMapper', () => {
     ['null config', null, 'config must be a plain object'],
     ['array config', [], 'config must be a plain object'],
     ['non-string host', { host: 1 }, 'config.host must be a string'],
-    ['invalid adapter', { adapter: 'xhr' }, "config.adapter must be 'axios' or 'fetch'"],
+    [
+      'invalid adapter',
+      { adapter: 'fetch' },
+      'config.adapter must be a transport constructor',
+    ],
     ['invalid intercept', { intercept: 'yes' }, 'config.intercept must be a plain object'],
     [
       'invalid request intercept',

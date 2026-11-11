@@ -17,7 +17,7 @@ import type {
   RequestOptions,
   ResourceDefinition,
 } from './types.js';
-import { createTransport } from './transports/index.js';
+import { AxiosTransport, createTransport } from './transports/index.js';
 
 type RequestFactory = (resource: ResourceDefinition) => MapperRequest;
 
@@ -124,7 +124,7 @@ export function createMapper<C extends MapperConfig = MapperConfig>(
   );
   const interceptors = resolvedConfig.intercept ?? undefined;
   const transport = createTransport(
-    resolvedConfig.adapter ?? 'axios',
+    resolvedConfig.adapter ?? AxiosTransport,
     resolvedConfig.host ?? '',
   );
   const factory = createRequestFactory(defaults, interceptors, transport);

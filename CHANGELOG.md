@@ -7,7 +7,8 @@ All notable changes to this project are documented here. Releases are generated 
 ### Added
 
 - `createMapper` factory API with inferred resource and CRUD method types.
-- Native `fetch` transport (`adapter: 'fetch'`) alongside the default axios transport.
+- Native `fetch` transport alongside the default axios transport, selected with transport constructors.
+- `createAxiosMapper` and `createFetchMapper` presets, plus exported `AxiosTransport` and `FetchTransport` adapters.
 - Full TypeScript source, declarations, ESM/CJS builds, and strict public types.
 - Vitest test suite with 100% statement, branch, function, and line coverage.
 - Semantic-release automation, CI, npm lockfile, and security documentation.
