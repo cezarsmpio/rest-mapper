@@ -1,7 +1,9 @@
-const BLOCKED_KEYS = ['__proto__', 'constructor', 'prototype'];
-
 export function isBlockedKey(key: PropertyKey): boolean {
-  return typeof key === 'string' && BLOCKED_KEYS.includes(key);
+  return (
+    key === '__proto__' ||
+    key === 'constructor' ||
+    key === 'prototype'
+  );
 }
 
 export function isPlainObject(
@@ -14,7 +16,12 @@ export function isPlainObject(
 }
 
 function cloneValue(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(cloneValue);
+  if (Array.isArray(value)) {
+    const clone = new Array<unknown>(value.length);
+    for (let i = 0; i < value.length; i++) clone[i] = cloneValue(value[i]);
+    return clone;
+  }
+
   if (isPlainObject(value)) return deepMerge(value);
 
   return value;
@@ -33,8 +40,11 @@ export function deepMerge<T extends object = Record<string, unknown>>(
   for (const source of sources) {
     if (!isPlainObject(source)) continue;
 
-    for (const [key, value] of Object.entries(source)) {
-      if (isBlockedKey(key) || value === undefined) continue;
+    for (const key in source) {
+      if (!Object.hasOwn(source, key)) continue;
+
+      const value = source[key];
+      if (value === undefined || isBlockedKey(key)) continue;
 
       const existing = result[key];
 

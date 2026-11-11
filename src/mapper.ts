@@ -5,7 +5,7 @@ import {
   handleResponseError,
 } from './interceptors.js';
 import { deepMerge } from './merge.js';
-import { resolveRequest } from './request.js';
+import { createRequestResolver } from './request.js';
 import type {
   CrudDefinition,
   CrudMethods,
@@ -27,25 +27,43 @@ function createRequestFactory(
   transport: ReturnType<typeof createTransport>,
 ): RequestFactory {
   return (resource) => {
+    let resolve: ReturnType<typeof createRequestResolver> | undefined;
+    let hasInterceptors: boolean | undefined;
+
     async function request<T = unknown>(
       options?: RequestOptions,
     ): Promise<MapperResponse<T>> {
-      assertRequestOptions(options);
+      if (options !== undefined) assertRequestOptions(options);
 
-      const config = resolveRequest(resource, options, defaults);
-      const intercepted = await applyRequestInterceptors(
-        config,
-        interceptors,
+      // Resolve once so the common no-interceptor path stays allocation-free.
+      hasInterceptors ??= Boolean(
+        interceptors && (interceptors.request || interceptors.response),
       );
+
+      const config = (resolve ??= createRequestResolver(resource, defaults))(
+        options,
+      );
+      const interceptRequest =
+        hasInterceptors && interceptors && interceptors.request?.before;
+      const intercepted = interceptRequest
+        ? await applyRequestInterceptors(config, interceptors)
+        : config;
 
       try {
         const response = await transport.request(intercepted);
-        return (await applyResponseInterceptors(
-          response,
-          interceptors,
-        )) as MapperResponse<T>;
+        const interceptResponse =
+          hasInterceptors && interceptors && interceptors.response?.success;
+        return (interceptResponse
+          ? await applyResponseInterceptors(response, interceptors)
+          : response) as MapperResponse<T>;
       } catch (error) {
-        return await handleResponseError(error, interceptors);
+        const interceptResponseError =
+          hasInterceptors && interceptors && interceptors.response?.error;
+        if (interceptResponseError) {
+          return await handleResponseError(error, interceptors);
+        }
+
+        throw error;
       }
     }
 

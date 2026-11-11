@@ -30,6 +30,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:compat": "node scripts/compatibility-smoke.mjs",
+    "bench": "npm run build && node --experimental-bench --bench --bench-samples=50 --bench-warmup=20 'benchmarks/*.bench.mjs'",
+    "bench:json": "npm run build && node --experimental-bench --bench --bench-samples=50 --bench-warmup=20 --bench-reporter=json --bench-reporter-destination=benchmarks/latest.json 'benchmarks/*.bench.mjs'",
     "lint:pack": "publint && attw --pack .",
     "verify": "npm run typecheck && npm run test:coverage && npm run build && npm run lint:pack && npm run test:compat",
     "prepublishOnly": "npm run build"

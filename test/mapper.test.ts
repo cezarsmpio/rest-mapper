@@ -295,6 +295,31 @@ describe('createMapper', () => {
     expect(errorHandler).toHaveBeenCalledWith(error);
   });
 
+  it('propagates transport failures without an error interceptor', async () => {
+    stubFetch(async () => {
+      throw new Error('network down');
+    });
+    const api = createMapper({
+      adapter: FetchTransport,
+      resources: { User: { get: { url: '/users' } } },
+    });
+
+    await expect(api.User.get()).rejects.toThrow('network down');
+  });
+
+  it('reuses request setup across repeated calls', async () => {
+    const fetchMock = stubFetch();
+    const api = createMapper({
+      adapter: FetchTransport,
+      resources: { User: { get: { url: '/users/{id}' } } },
+    });
+
+    await api.User.get({ params: { id: 1 } });
+    await api.User.get({ params: { id: 2 } });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
   it('accepts intercept: false', async () => {
     stubFetch();
     const api = createMapper({

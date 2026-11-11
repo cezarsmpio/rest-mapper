@@ -72,9 +72,33 @@ describe('URL utilities', () => {
     );
   });
 
+  it('skips null and undefined nested query values', () => {
+    const query = buildQueryString({
+      nested: { kept: 1, skippedNull: null, skippedUndefined: undefined },
+    });
+
+    expect(query).toBe('nested%5Bkept%5D=1');
+  });
+
   it('returns an empty query string for no parameters', () => {
     expect(buildQueryString()).toBe('');
     expect(buildQueryString({})).toBe('');
+  });
+
+  it('ignores inherited enumerable query keys', () => {
+    Object.defineProperty(Object.prototype, 'inheritedQuery', {
+      value: 'ignored',
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+
+    try {
+      expect(buildQueryString({ own: 1 })).toBe('own=1');
+    } finally {
+      delete (Object.prototype as { inheritedQuery?: string })
+        .inheritedQuery;
+    }
   });
 
   it('builds request URLs with relative and absolute paths', () => {

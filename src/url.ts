@@ -30,6 +30,8 @@ export function interpolatePath(
   template: string,
   params: Params = {},
 ): string {
+  if (!template.includes('{')) return template;
+
   return template.replace(/{([^{}]+)}/g, (placeholder, key: string) => {
     const value = params[key];
     return isInterpolatable(value)
@@ -66,13 +68,24 @@ function appendQueryValue(
 }
 
 export function buildQueryString(params: Params = {}): string {
-  const search = new URLSearchParams();
+  let search: URLSearchParams | undefined;
 
-  for (const [key, value] of Object.entries(params)) {
-    appendQueryValue(search, key, value);
+  for (const key in params) {
+    if (!Object.hasOwn(params, key)) continue;
+
+    const value = params[key];
+    if (value === null || value === undefined) continue;
+
+    search ??= new URLSearchParams();
+
+    if (isInterpolatable(value)) {
+      search.append(key, String(value));
+    } else {
+      appendQueryValue(search, key, value);
+    }
   }
 
-  return search.toString();
+  return search ? search.toString() : '';
 }
 
 export function buildRequestUrl(

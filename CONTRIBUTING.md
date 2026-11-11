@@ -20,7 +20,15 @@ npm run verify
    - `docs: ...`, `test: ...`, `chore: ...`, `refactor: ...` for other work
 5. Open a pull request against `main`.
 
-`npm run verify` runs strict TypeScript checking, the full Vitest suite with 100% coverage thresholds, the dual-format build, and package export validation.
+`npm run verify` runs strict TypeScript checking, the full Vitest suite with 100% coverage thresholds, the dual-format build, package export validation, and the runtime compatibility smoke test.
+
+Performance work uses Node 26's native benchmark runner:
+
+```bash
+npm run bench
+```
+
+Record baseline results separately from optimized results and compare median rates. See [benchmarks/README.md](./benchmarks/README.md).
 
 ## Releases
 

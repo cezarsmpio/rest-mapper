@@ -27,13 +27,16 @@ interface PreparedFetchRequest {
   abort: AbortBundle;
 }
 
+const NO_ABORT: AbortBundle = {
+  signal: undefined,
+  cleanup: () => undefined,
+};
+
 function createAbortBundle(
   signal: AbortSignal | undefined,
   timeout: number | undefined,
 ): AbortBundle {
-  if (!signal && (!timeout || timeout <= 0)) {
-    return { signal: undefined, cleanup: () => undefined };
-  }
+  if (!signal && (!timeout || timeout <= 0)) return NO_ABORT;
 
   const controller = new AbortController();
   const cleanup: Array<() => void> = [];
@@ -89,43 +92,55 @@ function encodeBasicAuth(
   return `Basic ${btoa(value)}`;
 }
 
-function createHeaders(config: ResolvedRequestConfig): MapperHeaders {
-  const headers: MapperHeaders = { ...config.headers };
-
-  if (
-    config.auth &&
-    !headers.authorization &&
-    (config.auth.username !== undefined || config.auth.password !== undefined)
-  ) {
-    headers.authorization = encodeBasicAuth(
-      config.auth.username,
-      config.auth.password,
-    );
-  }
-
-  return headers;
+interface PreparedBody {
+  body: BodyInit | undefined;
+  json: boolean;
 }
 
-function createBody(
-  config: ResolvedRequestConfig,
-  headers: MapperHeaders,
-): BodyInit | undefined {
+const NO_BODY: PreparedBody = { body: undefined, json: false };
+
+function prepareBody(config: ResolvedRequestConfig): PreparedBody {
   if (
     config.data === undefined ||
     config.data === null ||
     config.method === 'get' ||
     config.method === 'head'
   ) {
-    return undefined;
+    return NO_BODY;
   }
 
-  if (isNativeBody(config.data)) return config.data;
-
-  if (!headers['content-type']) {
-    headers['content-type'] = 'application/json';
+  if (isNativeBody(config.data)) {
+    return { body: config.data, json: false };
   }
 
-  return JSON.stringify(config.data);
+  return { body: JSON.stringify(config.data), json: true };
+}
+
+function createHeaders(
+  config: ResolvedRequestConfig,
+  jsonBody: boolean,
+): MapperHeaders {
+  let headers = config.headers;
+
+  if (
+    config.auth &&
+    !headers.authorization &&
+    (config.auth.username !== undefined || config.auth.password !== undefined)
+  ) {
+    headers = {
+      ...headers,
+      authorization: encodeBasicAuth(
+        config.auth.username,
+        config.auth.password,
+      ),
+    };
+  }
+
+  if (jsonBody && !headers['content-type']) {
+    headers = { ...headers, 'content-type': 'application/json' };
+  }
+
+  return headers;
 }
 
 function isJsonContentType(contentType: string): boolean {
@@ -232,29 +247,25 @@ function prepareFetchRequest(
   host: string,
   config: ResolvedRequestConfig,
 ): PreparedFetchRequest {
-  const headers = createHeaders(config);
-  const body = createBody(config, headers);
+  const preparedBody = prepareBody(config);
+  const headers = createHeaders(config, preparedBody.json);
   const abort = createAbortBundle(
     config.signal as AbortSignal | undefined,
     config.timeout,
   );
-  const credentials =
-    config.credentials ??
-    (config.withCredentials === true ? 'include' : undefined);
-
   const init: FetchRequestInit = {
     method: config.method.toUpperCase(),
     headers,
-    ...(body === undefined ? {} : { body }),
-    ...(abort.signal === undefined ? {} : { signal: abort.signal }),
-    ...(credentials === undefined ? {} : { credentials }),
-    ...(config.mode === undefined ? {} : { mode: config.mode }),
-    ...(config.cache === undefined ? {} : { cache: config.cache }),
-    ...(config.redirect === undefined ? {} : { redirect: config.redirect }),
-    ...(config.dispatcher === undefined
-      ? {}
-      : { dispatcher: config.dispatcher }),
   };
+
+  if (preparedBody.body !== undefined) init.body = preparedBody.body;
+  if (abort.signal !== undefined) init.signal = abort.signal;
+  if (config.credentials !== undefined) init.credentials = config.credentials;
+  else if (config.withCredentials === true) init.credentials = 'include';
+  if (config.mode !== undefined) init.mode = config.mode;
+  if (config.cache !== undefined) init.cache = config.cache;
+  if (config.redirect !== undefined) init.redirect = config.redirect;
+  if (config.dispatcher !== undefined) init.dispatcher = config.dispatcher;
 
   return {
     url: buildRequestUrl(host, config.url, config.params),

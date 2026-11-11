@@ -93,6 +93,21 @@ describe('merge utilities', () => {
     expect(({} as { polluted?: boolean }).polluted).toBeUndefined();
   });
 
+  it('ignores inherited enumerable keys', () => {
+    Object.defineProperty(Object.prototype, 'inherited', {
+      value: 'ignored',
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+
+    try {
+      expect(deepMerge({ own: true })).toEqual({ own: true });
+    } finally {
+      delete (Object.prototype as { inherited?: string }).inherited;
+    }
+  });
+
   it('checks own properties', () => {
     expect(hasOwn({ value: true }, 'value')).toBe(true);
     expect(hasOwn({}, 'value')).toBe(false);

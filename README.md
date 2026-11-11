@@ -329,9 +329,10 @@ npm run test:coverage
 npm run typecheck
 npm run build
 npm run verify
+npm run bench
 ```
 
-See [CHANGELOG.md](./CHANGELOG.md) for release history and [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
+See [benchmarks/README.md](./benchmarks/README.md) for benchmark details, [CHANGELOG.md](./CHANGELOG.md) for release history, and [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
 
 ## License
 

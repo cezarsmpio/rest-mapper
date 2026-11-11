@@ -11,21 +11,30 @@ import { interpolatePath } from './url.js';
 function normalizeHeaders(headers: unknown): MapperHeaders {
   if (!headers) return {};
 
-  if (headers instanceof Headers) {
-    return Object.fromEntries(headers.entries());
-  }
-
   const serializable = headers as { toJSON?: () => unknown };
-  const value =
-    typeof serializable.toJSON === 'function'
-      ? serializable.toJSON()
-      : headers;
+  let value: unknown;
+
+  if (
+    isPlainObject(headers) &&
+    typeof serializable.toJSON !== 'function'
+  ) {
+    value = headers;
+  } else if (typeof serializable.toJSON === 'function') {
+    value = serializable.toJSON();
+  } else if (headers instanceof Headers) {
+    return Object.fromEntries(headers.entries());
+  } else {
+    value = headers;
+  }
 
   if (!isPlainObject(value)) return {};
 
   const normalized: MapperHeaders = {};
 
-  for (const [key, headerValue] of Object.entries(value)) {
+  for (const key in value) {
+    if (!Object.hasOwn(value, key)) continue;
+
+    const headerValue = value[key];
     if (headerValue === undefined || headerValue === null) continue;
 
     normalized[key.toLowerCase()] = Array.isArray(headerValue)
@@ -46,17 +55,10 @@ function assertParams(
   }
 }
 
-export function resolveRequest(
-  resource: ResourceDefinition,
-  callOptions: RequestOptions | undefined,
-  defaults: RequestOptions,
+function resolveMergedRequest(
+  merged: Record<string, unknown>,
+  resourceUrl: string,
 ): ResolvedRequestConfig {
-  const merged = deepMerge<Record<string, unknown>>(
-    defaults as unknown as Record<string, unknown>,
-    resource as unknown as Record<string, unknown>,
-    (callOptions ?? {}) as Record<string, unknown>,
-  );
-
   if (merged.supplant !== undefined) {
     throw new TypeError(
       'request options.supplant is no longer supported; use request options.params instead.',
@@ -67,7 +69,7 @@ export function resolveRequest(
   assertParams(merged.query, 'query');
 
   const url = interpolatePath(
-    resource.url,
+    resourceUrl,
     (merged.params ?? {}) as Params,
   );
   const params = (merged.query ?? {}) as Params;
@@ -75,18 +77,58 @@ export function resolveRequest(
   const method =
     typeof merged.method === 'string' ? merged.method.toLowerCase() : 'get';
   const headers = normalizeHeaders(merged.headers);
-
-  delete merged.params;
-  delete merged.query;
-  delete merged.headers;
-  delete merged.url;
-  delete merged.method;
+  const {
+    params: _params,
+    query: _query,
+    headers: _headers,
+    url: _url,
+    method: _method,
+    ...rest
+  } = merged;
 
   return {
-    ...merged,
+    ...rest,
     url,
     method,
     params,
     headers,
   } as ResolvedRequestConfig;
+}
+
+export function resolveRequest(
+  resource: ResourceDefinition,
+  callOptions: RequestOptions | undefined,
+  defaults: RequestOptions,
+): ResolvedRequestConfig {
+  return resolveMergedRequest(
+    deepMerge<Record<string, unknown>>(
+      defaults as unknown as Record<string, unknown>,
+      resource as unknown as Record<string, unknown>,
+      (callOptions ?? {}) as Record<string, unknown>,
+    ),
+    resource.url,
+  );
+}
+
+export function createRequestResolver(
+  resource: ResourceDefinition,
+  defaults: RequestOptions,
+): (callOptions?: RequestOptions) => ResolvedRequestConfig {
+  let baseConfig: Record<string, unknown> | undefined;
+
+  // Defaults and resource options are stable; call options vary per request.
+  return (callOptions) => {
+    baseConfig ??= deepMerge<Record<string, unknown>>(
+      defaults as unknown as Record<string, unknown>,
+      resource as unknown as Record<string, unknown>,
+    );
+
+    return resolveMergedRequest(
+      deepMerge<Record<string, unknown>>(
+        baseConfig,
+        (callOptions ?? {}) as Record<string, unknown>,
+      ),
+      resource.url,
+    );
+  };
 }

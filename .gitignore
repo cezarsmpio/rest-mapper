@@ -12,6 +12,7 @@ pids
 coverage
 dist
 *.tgz
+benchmarks/latest.json
 
 # Dependency directory
 node_modules

@@ -86,6 +86,27 @@ describe('request resolution', () => {
     expect(result.headers).toEqual({});
   });
 
+  it('ignores inherited enumerable header keys', () => {
+    Object.defineProperty(Object.prototype, 'x-inherited', {
+      value: 'ignored',
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+
+    try {
+      const result = resolveRequest(
+        { url: '/users', headers: { 'X-Own': 'value' } },
+        undefined,
+        {},
+      );
+
+      expect(result.headers).toEqual({ 'x-own': 'value' });
+    } finally {
+      delete (Object.prototype as { 'x-inherited'?: string })['x-inherited'];
+    }
+  });
+
   it('removes helper properties from the transport config', () => {
     const result = resolveRequest(
       { url: '/users', method: 'delete' },
