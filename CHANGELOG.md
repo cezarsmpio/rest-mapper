@@ -20,6 +20,7 @@ All notable changes to this project are documented here. Releases are generated 
 - A transport adapter is required; there is no implicit axios fallback.
 - Dependencies, GitHub Actions, and package metadata are locked to current versions.
 - Node 26 is the default development runtime; CI covers Node 18, 20, 22, 24, and 26.
+- npm publishing uses GitHub OIDC trusted publishing with provenance; no `NPM_TOKEN` is stored.
 - Production bundles are not minified; minification is left to consumers. Source maps and the duplicate CJS declaration body are no longer published.
 - Request resolution caches stable configuration, skips unused interceptor work, and uses allocation-light URL, merge, and fetch paths. See `benchmarks/RESULTS.md`.
 - Default branch is `main`.

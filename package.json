@@ -75,7 +75,8 @@
   },
   "publishConfig": {
     "access": "public",
-    "provenance": true
+    "provenance": true,
+    "registry": "https://registry.npmjs.org"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.5",

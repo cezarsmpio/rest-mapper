@@ -19,6 +19,7 @@ jobs:
   release:
     if: github.repository == 'cezarsmpio/rest-mapper'
     runs-on: ubuntu-latest
+    environment: npm
     steps:
       - uses: actions/checkout@v7
         with:
@@ -26,7 +27,7 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
-          cache: npm
+          package-manager-cache: false
           registry-url: https://registry.npmjs.org
       - run: npm ci
       - run: npm run verify
@@ -41,5 +42,4 @@ jobs:
             @semantic-release/git@11.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: true

@@ -34,7 +34,17 @@ Record baseline results separately from optimized results and compare median rat
 
 Releases are automated with the semantic-release GitHub Action on `main`. Do not edit `CHANGELOG.md`, `package.json` versions, or create tags manually. Commit messages determine the next semantic version.
 
-The action installs semantic-release and its standard plugins in the workflow runtime. They are intentionally not package dependencies, which keeps the library's dependency graph and audit surface small.
+Publishing uses npm Trusted Publishing over GitHub OIDC. No `NPM_TOKEN` is stored.
+
+npm trusted publisher configuration:
+
+- Organization or user: `cezarsmpio`
+- Repository: `rest-mapper`
+- Workflow filename: `release.yml`
+- Environment: `npm`
+- Allowed action: direct `npm publish`
+
+The release job runs in the `npm` GitHub environment and requires the `id-token: write` permission. The action installs semantic-release and its standard plugins in the workflow runtime; they are intentionally not package dependencies, which keeps the library's dependency graph and audit surface small.
 
 ## Code style
 

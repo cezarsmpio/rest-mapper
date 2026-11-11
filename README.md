@@ -332,7 +332,7 @@ npm run verify
 npm run bench
 ```
 
-See [benchmarks/README.md](./benchmarks/README.md) for benchmark details, [CHANGELOG.md](./CHANGELOG.md) for release history, and [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
+See [benchmarks](https://github.com/cezarsmpio/rest-mapper/blob/main/benchmarks/README.md) for benchmark details, [CHANGELOG.md](https://github.com/cezarsmpio/rest-mapper/blob/main/CHANGELOG.md) for release history, and [CONTRIBUTING.md](https://github.com/cezarsmpio/rest-mapper/blob/main/CONTRIBUTING.md) for contribution guidelines.
 
 ## License
 
