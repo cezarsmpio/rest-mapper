@@ -1,344 +1,257 @@
-> An easy rest mapper for browsers and nodejs. Works on IE8+ and modern browsers.
+# rest-mapper
 
-Build on top axios - https://github.com/mzabriskie/axios
+A typed, isomorphic REST mapper for Node.js and browsers. Define your API once and call typed methods without repeating URLs, verbs, or request plumbing.
 
-Inspiration on Mappersmith - https://github.com/tulios/mappersmith
+- **TypeScript-first** with inferred resource and CRUD methods.
+- **axios by default**, with an opt-in native **fetch** transport.
+- **One request shape** for both transports.
+- **Path and query parameters** through a single `params` object.
+- **Interceptors**, global defaults, and CRUD generation.
+- **Dual ESM/CJS** builds and an optional axios peer dependency.
 
 ## Install
 
-```javascript
-npm install rest-mapper --save
+The default adapter uses axios, so install it alongside the library:
+
+```bash
+npm install rest-mapper axios
 ```
 
-## Usage
+Using only the fetch adapter? Axios is an optional peer and can be skipped:
 
-For browsers that has not support for __Promise__, please use some polyfill.
-
-#### Browsers with webpack and babel
-```javascript
-import Mapper from 'rest-mapper';
+```bash
+npm install rest-mapper
 ```
 
-#### NodeJS
-```
-var Mapper = require('rest-mapper').default;
-```
+## Quick start
 
-```javascript
+```ts
+import { createMapper } from 'rest-mapper';
 
-let API = new Mapper({
-  host: 'http://you.api.domain/v1',
-
-  intercept: {
-    request: {
-      before: function (config) {
-        ui.showLoading();
-      },
-      error: function (err) {
-        // no god, no
-      }
-    },
-    response: {
-      success: function (responseData) {
-        ui.hideLoading();
-      },
-      error: function (err) {
-        // oh my app
-      }
-    }
-  },
-
-  // Default options for all requests
-  defaults: {
-    method: 'post',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    params: {
-      category: 'all'
-    },
-    data: {
-      key: 'my_key_123'
-    },
-    timeout: 3000
-  },
-
+const api = createMapper({
+  host: 'https://api.example.com/v1',
   resources: {
     Auth: {
       signin: { url: '/access/signin', method: 'post' },
-      recovery: { url: '/access/recovery' }
     },
     User: {
-      save: { url: '/users/{id}', method: 'put' } // {id} is supplant
+      get: { url: '/users/{id}' },
+      save: { url: '/users/{id}', method: 'put' },
     },
-    Products: {
-      get: { url: '/products' },
-      getByDate: { url: '/products/date/{startDate}/{endDate}' }
-    }
-  }
+  },
+  cruds: {
+    Products: { baseURL: '/products' },
+  },
 });
+
+const user = await api.User.get({ params: { id: 3 } });
+const products = await api.Products.all({ query: { page: 2 } });
 ```
 
-#### Pass data using methods body, put or patch
-```javascript
-// POST /access/signin REQUEST username=foo&password=bar
+CommonJS:
 
-API.Auth
-  .signin({
-    data: {
-      username: 'foo',
-      password: 'bar'
-    }
-  })
-  .then((data) => {
-    // response
-  });
+```js
+const { createMapper } = require('rest-mapper');
 ```
 
+## Configuration
 
-#### Supplant example
-```javascript
-// POST /users/3
+```ts
+interface MapperConfig {
+  host?: string;
+  adapter?: 'axios' | 'fetch'; // default: 'axios'
+  defaults?: RequestOptions;
+  resources?: Record<string, Record<string, ResourceDefinition>>;
+  cruds?: Record<string, CrudDefinition>;
+  intercept?: Interceptors | false;
+}
+```
 
-API.User
-  .save({
-    supplant: { id: 3 },
-    headers: {
-      'Authorization': 'token YOUR_SECURE_TOKEN',
-      'Foo': 'bar'
+### Resources
+
+Each resource method describes one endpoint:
+
+```ts
+const api = createMapper({
+  host: 'https://api.example.com',
+  resources: {
+    Products: {
+      list: { url: '/products' },
+      byDate: { url: '/products/date/{startDate}/{endDate}' },
     },
-    method: 'post' // you can override params
-  })
-  .then((data) => {
-    // response
-    console.log(response.data);
-    console.log(response.status);
-    console.log(response.statusText);
-    console.log(response.headers);
-    console.log(response.config);
-  })
-  .catch((err) => {
-    // error
-  });
-```
-
-#### Get all products by query string
-```javascript
-// GET /products?page=2
-
-API.Products
-  .get({
-    params: {
-      page: 2
-    }
-  })
-  .then((data) => {
-    // response
-  });
-```
-
-
-#### Get products by range date
-```javascript
-// GET /products/date/2015-11-30/2015-12-25?status=active
-
-API.Products
-  .getByDate({
-    supplant: { startDate: '2015-11-30', endDate: '2015-12-25' },
-    params: { status: 'active' }
-  })
-  .then((data) => {
-    // response
-  })
-  .catch((err) => {
-    // error
-  })
-  .then(() => {
-    // complete
-  });
+  },
+});
 ```
 
 ### CRUD
 
-To use the crud, just put the crud property and its resources with the `baseURL`. For example:
+A CRUD group generates five methods from a `baseURL`:
 
-```javascript
-import Mapper from 'rest-mapper';
+| Method | Request |
+| --- | --- |
+| `all` | `GET /products` |
+| `get` | `GET /products/{id}` |
+| `create` | `POST /products` |
+| `update` | `PATCH /products/{id}` |
+| `delete` | `DELETE /products/{id}` |
 
-
-let Github = new Mapper({
-  host: 'https://api.github.com',
-
+```ts
+const api = createMapper({
+  host: 'https://api.example.com',
   cruds: {
-    Users: { baseURL: '/users' },
-    Issues: { baseURL: '/issues' },
-    Repo: {
-      baseURL: '/repositories',
+    Products: {
+      baseURL: '/products',
       defaults: {
-        headers: {
-          'Foo': 'Bar'
-        }
-      }
-    }
-  }
-});
-```
-
-The resources, `Users, Issues, Repo`, now have the methods: `all, get, create, update, delete`.
-
-It is just simple to use:
-
-```javascript
-// List all users
-Github.Users.all()
-  .then(res => res.data);
-
-// Get an user by id
-Github.Users.get({
-  params: { id: 'cezarlz' }
-})
-  .then(res => res.data);
-
-// Delete an issue by id
-Github.Issues.delete({
-  params: { id: 'cezarlz' }
-})
-  .then(res => res.data);
-
-// Create a new user
-Github.Users.create({
-  // Send any data you want  
-  data: {
-    foo: 'bar'
+        headers: { accept: 'application/json' },
+      },
+    },
   },
-  headers: {
-    'Authorization': 'token 123'
-  }
-})
-  .then(res => res.data);
+});
 
-// Update a repo by id with some options (See AJAX questions on docs section)
-Github.Repo.update({
-  params: { id: 'rest-mapper' },
-  data: { foo: 'bar' },
-  headers: { 'Content-Type': 'application/json' },
-  timeout: 2000
-})
-  .then(res => res.data);
+await api.Products.get({ params: { id: 10 } });
 ```
 
-## Docs
+### Path and query parameters
 
-For AJAX questions, see: https://github.com/mzabriskie/axios
+`params` replaces the old `supplant` API. Scalar keys that match `{placeholders}` are interpolated into the path and URL-encoded. Remaining keys become query parameters.
 
-#### Instantiating
+```ts
+await api.Products.byDate({
+  params: {
+    startDate: '2026-01-01',
+    endDate: '2026-01-31',
+    status: 'active',
+  },
+});
+// GET /products/date/2026-01-01/2026-01-31?status=active
+```
 
-```javascript
-// Browsers
-import Mapper from 'rest-mapper';
+Use `query` when you want to be explicit about query parameters:
 
-// NodeJS
-var Mapper = require('rest-mapper').default;
-
-let YourAPI = new Mapper({
-  host: 'https://api.you.domain/v1'
+```ts
+await api.Products.list({
+  params: { id: 10 }, // consumed by the path
+  query: { page: 2, sort: 'name' },
 });
 ```
 
-#### Resources and Methods
+### Request options
 
-The resources are the "groups" of your API. And for each resource, you will need add some methods.
+All axios request options are supported (`data`, `timeout`, `headers`, `responseType`, `validateStatus`, and so on), plus fetch-specific `credentials`, `mode`, `cache`, and `redirect`.
 
-##### Methods properties
-
-Name | Type | Required? | Default | More
------|------|-----------|---------|-----
-`url`|`string`|Yes|-|-
-`method`|`string`|No|`get`|-
-`supplant`|`object`|No|-|Use `supplant` only when your `url` is like `/users/{id}`. Supplant will replace `{id}` for your `id` value from object.
-
-For others properties like `params`, `data`, `headers`, `timeout`, etc, please, read the [axios documentation](https://github.com/mzabriskie/axios).
-
-##### Crud
-
-Name | Type | Required? | Default | More
------|------|-----------|---------|-----
-`baseURL`|`string`|Yes|-|Your `baseURL` will be the base for the methods that will created.
-`defaults`|`object`|No|-|Axios request object. For more information, please, read the [axios documentation](https://github.com/mzabriskie/axios).
-
-When you use the `crud`, you will have five methods (assuming your base is `/users`):
-
-* `all` - `GET /users`
-* `get` - `GET /users/{id}` - _I heard a supplant here?_
-* `create` - `POST /users`
-* `update` - `PATCH /users/{id}`
-* `delete` - `DELETE /users/{id}`
-
-##### Intercept
-
-Yes, you can intercept all of your requests. See the Usage section above for more information.
-
-##### Default values
-
-You can set default value __for all of your requests.__ See the Usage section above for more information.
-
-
-## Test
-
-rest-mapper uses Jasmine for tests. So, install jasmine and then execute:
-
-```
-jasmine
+```ts
+await api.Products.create({
+  data: { name: 'Keyboard' },
+  headers: { authorization: 'Bearer token' },
+  timeout: 5_000,
+});
 ```
 
-## Versions / Changelog
+### Defaults
 
-###### 1.4.5
-* Fixed a bunch of issues around the `rest-mapper`
+`defaults` apply to every request. Resource definitions and individual calls override them.
 
-###### 1.4.0
-* Removed singleton, because you can have many instances for multiple hosts
-* Back to object-merge library
-* RestMapper is isomorphic now, what I mean, it works on browsers and nodejs
-* Made tests using Jasmine
-* Some performance improvements
-* Added __CRUD__ support, rest-mapper will create for you five methods: `all, get, create, update, delete`
+```ts
+const api = createMapper({
+  host: 'https://api.example.com',
+  defaults: {
+    method: 'get',
+    timeout: 3_000,
+    headers: { accept: 'application/json' },
+    query: { locale: 'en' },
+  },
+  resources: {
+    User: {
+      get: { url: '/users/{id}' },
+    },
+  },
+});
+```
 
-###### 1.3.0
-* Updated axios to 0.12.0 and changed object-merge to deepmerge
+## Fetch transport
 
-###### 1.2.6
-* Some hotfixes around URL and Axios Update
+Set `adapter: 'fetch'` to use the platform `fetch`. The response keeps the axios-compatible shape: `{ data, status, statusText, headers, config, request }`.
 
-###### 1.2.5
-* Url hotfix
+```ts
+const api = createMapper({
+  adapter: 'fetch',
+  host: 'https://api.example.com',
+  cruds: { Products: { baseURL: '/products' } },
+});
 
-###### 1.2.4
-* Supplant double host fixed
+const response = await api.Products.all();
+console.log(response.status, response.data);
+```
 
-###### 1.2.3
-* Use spread operator instead object-merge
+The fetch transport supports JSON, text, `arraybuffer`, `blob`, and `stream` response types, timeouts, caller-provided `AbortSignal`s, `validateStatus`, basic auth, credentials, and standard fetch request options. HTTP failures reject with a `RestMapperError` that exposes both `error.status` and `error.response`.
 
-###### 1.2.2
-* Url without supllant bug 1.2.1 fixed
+The axios adapter is unchanged: axios responses and axios errors pass through as before.
 
-###### 1.2.1
-* Supplant bug 1.2.0 fixed
+## Interceptors
 
-###### 1.2.0 :dizzy:
-* Added default params for all requests
+```ts
+const api = createMapper({
+  host: 'https://api.example.com',
+  intercept: {
+    request: {
+      before(config) {
+        config.headers.authorization = 'Bearer token';
+      },
+      error(error) {
+        console.error('request interceptor failed', error);
+      },
+    },
+    response: {
+      success(response) {
+        return response;
+      },
+      error(error) {
+        console.error('request failed', error);
+      },
+    },
+  },
+});
+```
 
-###### 1.1.2 :snowflake:
-* Change intercept logic
+`before` and `success` handlers may mutate the value or return a replacement (including a promise). Error handlers observe failures; the original error is rethrown.
 
-###### 1.1.1 :zap:
-* Singleton pattern, better performance
+## TypeScript
 
-###### 1.1.0 :cyclone:
-* Added interceptors
+Resource names, method names, CRUD methods, request options, and response helpers are typed. You can specialize response data per call:
 
-###### 1.0.0 :star:
-* Create the rest-mapper
-* Call ajax requests build top on axios
-* resources
-* hosts
+```ts
+interface Product {
+  id: number;
+  name: string;
+}
+
+const response = await api.Products.get<Product>({ params: { id: 1 } });
+console.log(response.data.name); // string
+```
+
+Public types include `MapperConfig`, `Mapper`, `MapperResponse`, `RequestOptions`, `RestMapperError`, and the individual resource/CRUD mapper types.
+
+## Migrating from 1.x
+
+- Replace `new Mapper(config)` with `createMapper(config)`.
+- Replace `supplant: { id: 1 }` with `params: { id: 1 }`.
+- If you use the default axios adapter, install axios as a peer dependency.
+- Use `adapter: 'fetch'` to opt into the native fetch transport.
+- The package is now ESM-first with a CommonJS build. Both named and default exports are available.
+
+## Development
+
+```bash
+npm install
+npm test
+npm run test:coverage
+npm run typecheck
+npm run build
+npm run verify
+```
+
+See [CHANGELOG.md](./CHANGELOG.md) for release history and [CONTRIBUTING.md](./CONTRIBUTING.md) for contribution guidelines.
+
+## License
+
+MIT © Cezar Sampaio
