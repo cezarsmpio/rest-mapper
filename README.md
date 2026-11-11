@@ -2,6 +2,8 @@
 
 A typed, isomorphic REST mapper for Node.js and browsers. Define your API once and call typed methods without repeating URLs, verbs, or request plumbing.
 
+> **Version 2 is a breaking release.** See [Migrating from 1.x](https://github.com/cezarsmpio/rest-mapper#migrating-from-1x) before upgrading.
+
 - **TypeScript-first** with inferred resource and CRUD methods.
 - **axios, fetch, and undici transports** with an explicit transport adapter.
 - **One request shape** for every transport.
